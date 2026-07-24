@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Thang — Senior iOS Engineer</title>
-<meta name="description" content="Senior iOS Engineer with 5+ years shipping native Swift apps across fintech, fitness, education, and IoT.">
+<title>Thang Truong — iOS Developer</title>
+<meta name="description" content="iOS Developer with 5+ years shipping native Swift apps across fintech, fitness, education, and IoT.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -37,14 +38,18 @@ nav{position:sticky; top:0; z-index:50; backdrop-filter:blur(10px);
 .nav-in{max-width:var(--maxw); margin:0 auto; padding:16px 32px;
   display:flex; align-items:center; justify-content:space-between;}
 .brand{font-family:'Space Grotesk',sans-serif; font-weight:700; letter-spacing:-.01em; font-size:1.05rem;
-  display:flex; align-items:center; gap:9px;}
-.brand .dot{width:9px; height:9px; border-radius:50%; background:var(--accent);}
+  display:flex; align-items:center; gap:10px;}
+.brand .mono{width:24px; height:24px; border-radius:7px; background:var(--accent); color:#fff;
+  font-size:.85rem; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  box-shadow:0 4px 10px -3px rgba(32,54,216,.55);}
 .nav-links{display:flex; gap:26px; font-size:.9rem; color:var(--ink-soft); font-weight:500;}
 .nav-links a{position:relative; transition:color .15s;}
 .nav-links a:hover{color:var(--ink);}
 .nav-links a::after{content:""; position:absolute; left:0; right:100%; bottom:-4px; height:2px;
   background:var(--accent); transition:right .2s ease;}
 .nav-links a:hover::after{right:0;}
+.nav-links a.active{color:var(--accent-deep);}
+.nav-links a.active::after{right:0;}
 
 /* ---------- HERO ---------- */
 header.hero{padding:96px 0 72px; border-bottom:1px solid var(--line);
@@ -65,12 +70,13 @@ header.hero{padding:96px 0 72px; border-bottom:1px solid var(--line);
 .btn-ghost:hover{border-color:var(--accent); color:var(--accent-deep);}
 
 /* spec ledger (signature) */
-.ledger{border-top:1px solid var(--line); display:grid; grid-template-columns:repeat(4,1fr);}
-.ledger div{padding:22px 22px 22px 0; border-right:1px solid var(--line);}
-.ledger div:last-child{border-right:none;}
-.ledger .num{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.7rem; letter-spacing:-.02em;}
-.ledger .lbl{font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--ink-faint);
-  text-transform:uppercase; letter-spacing:.08em; margin-top:4px;}
+.ledger{border-top:1px solid var(--line); padding-top:26px; display:flex; flex-wrap:wrap; gap:12px;}
+.ledger .pill{display:flex; align-items:baseline; gap:7px; background:#fff; border:1px solid var(--line);
+  border-radius:999px; padding:10px 18px;}
+.ledger .pill strong{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.1rem;
+  letter-spacing:-.01em; color:var(--ink);}
+.ledger .pill{font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--ink-faint);
+  text-transform:uppercase; letter-spacing:.06em;}
 
 /* ---------- SECTION SCAFFOLD ---------- */
 section{padding:82px 0; border-bottom:1px solid var(--line);}
@@ -100,7 +106,8 @@ section{padding:82px 0; border-bottom:1px solid var(--line);}
 .tag{display:inline-block; font-family:'JetBrains Mono',monospace; font-size:.68rem; letter-spacing:.06em;
   text-transform:uppercase; color:var(--accent-deep); background:var(--accent-soft);
   padding:4px 10px; border-radius:6px; font-weight:700;}
-.card h3{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:1.2rem; margin:14px 0 6px;}
+.card h3{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:1.2rem; margin:14px 0 2px;}
+.card .meta{font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--ink-faint); margin:0 0 10px;}
 .card .desc{color:var(--ink-soft); font-size:.95rem; margin:0 0 16px;}
 .chips{display:flex; flex-wrap:wrap; gap:7px;}
 .chip{font-family:'JetBrains Mono',monospace; font-size:.7rem; color:var(--ink-soft);
@@ -147,9 +154,6 @@ footer .shell{color:var(--ink-faint); font-family:'JetBrains Mono',monospace; fo
   .about-grid{grid-template-columns:1fr; gap:32px;}
   .work-grid{grid-template-columns:1fr;}
   .exp-grid{grid-template-columns:1fr; gap:26px;}
-  .ledger{grid-template-columns:repeat(2,1fr);}
-  .ledger div{border-right:none; border-bottom:1px solid var(--line); padding:18px 0;}
-  .ledger div:nth-child(odd){border-right:1px solid var(--line); padding-right:22px;}
 }
 @media (max-width:480px){
   .nav-links{display:none;}
@@ -161,7 +165,7 @@ footer .shell{color:var(--ink-faint); font-family:'JetBrains Mono',monospace; fo
 <!-- ================= NAV ================= -->
 <nav>
   <div class="nav-in">
-    <a class="brand" href="#top"><span class="dot"></span>Thang</a>
+    <a class="brand" href="#top"><span class="mono">T</span>Thang Truong</a>
     <div class="nav-links">
       <a href="#work">Work</a>
       <a href="#about">About</a>
@@ -174,19 +178,20 @@ footer .shell{color:var(--ink-faint); font-family:'JetBrains Mono',monospace; fo
 <!-- ================= HERO ================= -->
 <header class="hero" id="top">
   <div class="shell">
-    <p class="eyebrow reveal">Senior iOS Engineer · Remote-friendly (GMT+7)</p>
+    <p class="eyebrow reveal">iOS Developer · Remote-friendly (GMT+7)</p>
     <h1 class="reveal">I build polished, secure <span class="hl">iOS apps</span> — from digital banking to fitness.</h1>
     <p class="sub reveal">5+ years shipping native iOS with Swift &amp; SwiftUI. I've worked across fintech, fitness, education, and IoT — and I care as much about clean architecture underneath as about the pixels users actually touch.</p>
     <div class="cta reveal">
       <a class="btn btn-primary" href="#work">View work</a>
       <a class="btn btn-ghost" href="#contact">Get in touch</a>
+      <a class="btn btn-ghost" href="CV_ThangTruong.pdf" download>Download CV</a>
     </div>
     <!-- spec ledger -->
     <div class="ledger reveal">
-      <div><div class="num">5+</div><div class="lbl">Years iOS</div></div>
-      <div><div class="num">6+</div><div class="lbl">Apps shipped</div></div>
-      <div><div class="num">4</div><div class="lbl">Domains</div></div>
-      <div><div class="num">Swift</div><div class="lbl">First</div></div>
+      <span class="pill"><strong>5+</strong>Years iOS</span>
+      <span class="pill"><strong>6+</strong>Apps shipped</span>
+      <span class="pill"><strong>4</strong>Domains</span>
+      <span class="pill"><strong>Swift</strong>First</span>
     </div>
   </div>
 </header>
@@ -199,14 +204,14 @@ footer .shell{color:var(--ink-faint); font-family:'JetBrains Mono',monospace; fo
     <div class="about-grid">
       <div class="reveal">
         <p>I was hired as an <strong>Android developer</strong> — and placed on an iOS team on day one. That accident became my edge: I learn fast, adapt faster, and I'm never precious about tools when there's a better way to ship.</p>
-        <p>Since then I've built production apps in <strong>digital banking, fitness, education, and IoT</strong> — the kind of work where correctness, security, and a smooth feel all have to hold at once. I lean on <strong>Clean Architecture and TCA</strong> to keep large codebases testable, and I bring modern <strong>Swift Concurrency</strong> and CI/CD automation into every project I own.</p>
+        <p>Since then I've built production apps in <strong>digital banking, fitness, education, and IoT</strong> — the kind of work where correctness, security, and a smooth feel all have to hold at once. I lean on <strong>Clean Architecture</strong> and modular design to keep large codebases testable, and I bring modern <strong>Swift concurrency</strong>, CI/CD automation, and <strong>AI-assisted workflows</strong> (Claude, Cursor) into every project I own.</p>
       </div>
       <!-- "developer as a Swift struct" — personality touch -->
       <div class="code-card reveal" aria-hidden="true">
         <div class="bar">● ● ●</div>
         <pre><code><span class="ck">struct</span> <span class="ct">Engineer</span> {
     <span class="ck">let</span> name = <span class="cs">"Thang"</span>
-    <span class="ck">let</span> role = <span class="cs">"Senior iOS Engineer"</span>
+    <span class="ck">let</span> role = <span class="cs">"iOS Developer"</span>
     <span class="ck">let</span> years = <span class="cn">5</span>  <span class="cc">// and counting</span>
     <span class="ck">let</span> stack: [<span class="ct">Skill</span>] = [
         .swift, .swiftUI, .combine, .concurrency
@@ -232,45 +237,51 @@ footer .shell{color:var(--ink-faint); font-family:'JetBrains Mono',monospace; fo
     <div class="work-grid">
 
       <article class="card reveal">
-        <span class="tag">Fintech · Banking</span>
-        <h3>S-Connect (SCB Connect)</h3>
-        <p class="desc">Native iOS for a digital banking app — secure authentication, transaction flows, and the kind of hardened, compliance-aware engineering that money movement demands.</p>
-        <div class="chips"><span class="chip">Swift</span><span class="chip">UIKit</span><span class="chip">Security</span><span class="chip">SoftOTP</span></div>
+        <span class="tag">Fitness · Solo build</span>
+        <h3>Daily Strong</h3>
+        <p class="meta">S3 Corp · Apr 2026 – Present</p>
+        <p class="desc">A product I designed and built solo end-to-end at S3 Corp — from architecture and subscriptions to release automation, shipped to the App Store.</p>
+        <div class="chips"><span class="chip">SwiftUI</span><span class="chip">RevenueCat</span><span class="chip">Firebase</span><span class="chip">CI/CD</span></div>
       </article>
 
       <article class="card reveal">
         <span class="tag">Fitness · Social</span>
         <h3>Ganbaru Method</h3>
-        <p class="desc">A fitness and social experience with real-time interaction and media-heavy feeds — built for smooth performance and an engaging, habit-forming feel.</p>
-        <div class="chips"><span class="chip">SwiftUI</span><span class="chip">Combine</span><span class="chip">WebSocket</span><span class="chip">Firebase</span></div>
-      </article>
-
-      <article class="card reveal">
-        <span class="tag">Fitness · My own app</span>
-        <h3>Daily Strong</h3>
-        <p class="desc">A personal product I designed, built, and shipped to the App Store solo — from architecture and subscriptions to release automation.</p>
-        <div class="chips"><span class="chip">SwiftUI</span><span class="chip">RevenueCat</span><span class="chip">Firebase</span><span class="chip">CI/CD</span></div>
+        <p class="meta">S3 Corp · Oct 2023 – Present</p>
+        <p class="desc">A fitness and social platform — improved app performance by ~25% through UI and API optimization, cut crash rate with Crashlytics monitoring, and shipped in-app subscriptions via StoreKit.</p>
+        <div class="chips"><span class="chip">SwiftUI</span><span class="chip">UIKit</span><span class="chip">Combine</span><span class="chip">StoreKit</span><span class="chip">Crashlytics</span></div>
       </article>
 
       <article class="card reveal">
         <span class="tag">Education</span>
         <h3>Happy Lof School</h3>
-        <p class="desc">An education platform connecting schools, teachers, and families — with a clean, dependable interface for everyday use by non-technical people.</p>
-        <div class="chips"><span class="chip">Swift</span><span class="chip">UIKit</span><span class="chip">REST</span></div>
+        <p class="meta">S3 Corp · Apr 2023 – Oct 2023</p>
+        <p class="desc">An education platform connecting schools, teachers, and families — I set up the initial architecture and delivered auth, quizzes, video learning, and scheduling with a responsive, dependable UI.</p>
+        <div class="chips"><span class="chip">Swift</span><span class="chip">UIKit</span><span class="chip">SwiftUI</span><span class="chip">Firebase</span></div>
       </article>
 
       <article class="card reveal">
         <span class="tag">Career · Cross-platform</span>
         <h3>Huong Nghiep LwL</h3>
-        <p class="desc">A career-orientation app built cross-platform in Flutter — showing I can move fluidly beyond native when a project calls for it.</p>
-        <div class="chips"><span class="chip">Flutter</span><span class="chip">Dart</span></div>
+        <p class="meta">S3 Corp · Mar 2022 – Mar 2023</p>
+        <p class="desc">A career-orientation platform built cross-platform in Flutter — real-time community features via Socket.IO with structured state management, showing I can move fluidly beyond native when a project calls for it.</p>
+        <div class="chips"><span class="chip">Flutter</span><span class="chip">Dart</span><span class="chip">Bloc/Cubit</span><span class="chip">Socket.IO</span></div>
+      </article>
+
+      <article class="card reveal">
+        <span class="tag">Fintech · Banking</span>
+        <h3>S-Connect (SCB Connect)</h3>
+        <p class="meta">Minerva · Dec 2020 – Jul 2021</p>
+        <p class="desc">Native iOS for a digital banking app — biometric authentication, transaction flows, QR &amp; bill payment, and the kind of hardened, compliance-aware engineering that money movement demands.</p>
+        <div class="chips"><span class="chip">Swift</span><span class="chip">UIKit</span><span class="chip">JWT</span><span class="chip">Biometric Auth</span></div>
       </article>
 
       <article class="card reveal">
         <span class="tag">IoT · Smart Home</span>
         <h3>Smart Home</h3>
-        <p class="desc">A connected-device app coordinating hardware and real-time state — where reliability and responsiveness matter more than anything.</p>
-        <div class="chips"><span class="chip">Swift</span><span class="chip">BLE / IoT</span><span class="chip">Real-time</span></div>
+        <p class="meta">Minerva · Aug 2020 – Dec 2020</p>
+        <p class="desc">A connected-device app controlling smart home hardware (lights, fans, curtains) over MQTT — where reliability and responsiveness matter more than anything.</p>
+        <div class="chips"><span class="chip">Swift</span><span class="chip">SwiftUI</span><span class="chip">MQTT</span><span class="chip">Real-time</span></div>
       </article>
 
     </div>
@@ -285,15 +296,27 @@ footer .shell{color:var(--ink-faint); font-family:'JetBrains Mono',monospace; fo
     <div class="exp-grid">
       <div class="exp-block reveal">
         <h4>Languages &amp; Frameworks</h4>
-        <div class="exp-list"><span>Swift</span><span>SwiftUI</span><span>UIKit</span><span>Combine</span><span>Swift Concurrency</span><span>Flutter / Dart</span></div>
+        <div class="exp-list"><span>Swift</span><span>SwiftUI</span><span>UIKit</span><span>Combine</span><span>Dart (Flutter)</span></div>
       </div>
       <div class="exp-block reveal">
-        <h4>Architecture</h4>
-        <div class="exp-list"><span>Clean Architecture</span><span>TCA</span><span>MVVM</span><span>MVP</span><span>Dependency Injection</span></div>
+        <h4>Architecture &amp; Patterns</h4>
+        <div class="exp-list"><span>Clean Architecture</span><span>MVVM</span><span>MVC</span><span>MVP</span><span>Modular Architecture</span></div>
       </div>
       <div class="exp-block reveal">
-        <h4>Platform &amp; Tooling</h4>
-        <div class="exp-list"><span>Firebase</span><span>RevenueCat</span><span>GitHub Actions CI/CD</span><span>XCTest</span><span>Instruments</span></div>
+        <h4>Concurrency &amp; Performance</h4>
+        <div class="exp-list"><span>GCD</span><span>Async/Await</span><span>Memory Management</span><span>Xcode Instruments</span></div>
+      </div>
+      <div class="exp-block reveal">
+        <h4>Networking &amp; Data</h4>
+        <div class="exp-list"><span>RESTful APIs</span><span>Alamofire</span><span>Moya</span><span>JWT Auth</span></div>
+      </div>
+      <div class="exp-block reveal">
+        <h4>Tools &amp; Platforms</h4>
+        <div class="exp-list"><span>Firebase</span><span>RevenueCat</span><span>Git / GitHub / GitLab</span><span>Jira</span><span>CI/CD</span></div>
+      </div>
+      <div class="exp-block reveal">
+        <h4>AI-Assisted Development</h4>
+        <div class="exp-list"><span>Claude (code review)</span><span>Cursor</span><span>Slack + Linear workflows</span></div>
       </div>
       <div class="exp-block reveal">
         <h4>Domains</h4>
@@ -303,18 +326,6 @@ footer .shell{color:var(--ink-faint); font-family:'JetBrains Mono',monospace; fo
   </div>
 </section>
 
-<!-- ================= WRITING / LEARNING ================= -->
-<section id="writing">
-  <div class="shell">
-    <p class="sec-eyebrow reveal">Always learning</p>
-    <h2 class="sec-title reveal">I keep sharpening the fundamentals.</h2>
-    <div class="note-card reveal">
-      <p><strong>iOS Engineering — a living study reference.</strong> A deep, structured guide I maintain on Swift, concurrency, architecture, and system design. Self-directed learning is a habit, not a phase.</p>
-      <!-- EDIT: update this link to match the filename you upload (e.g. ios-prep.html) -->
-      <a class="btn btn-primary" href="ios-prep.html">Read the guide →</a>
-    </div>
-  </div>
-</section>
 
 <!-- ================= CONTACT ================= -->
 <section id="contact">
@@ -334,7 +345,7 @@ footer .shell{color:var(--ink-faint); font-family:'JetBrains Mono',monospace; fo
 </section>
 
 <footer>
-  <div class="shell">© <span id="yr"></span> Thang · Senior iOS Engineer · Built &amp; hosted by hand.</div>
+  <div class="shell">© <span id="yr"></span> Thang Truong · iOS Developer · Built &amp; hosted by hand.</div>
 </footer>
 
 <script>
@@ -351,6 +362,22 @@ if (reduce) {
   }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
   els.forEach(e => io.observe(e));
 }
+
+const navLinks = document.querySelectorAll('.nav-links a');
+const navSpy = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    const link = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
+    if (!link) return;
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+['work','about','expertise','contact'].forEach(id => {
+  const sec = document.getElementById(id);
+  if (sec) navSpy.observe(sec);
+});
 </script>
 </body>
 </html>
