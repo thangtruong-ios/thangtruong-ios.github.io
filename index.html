@@ -113,6 +113,23 @@ section{padding:82px 0; border-bottom:1px solid var(--line);}
 .chip{font-family:'JetBrains Mono',monospace; font-size:.7rem; color:var(--ink-soft);
   border:1px solid var(--line); border-radius:6px; padding:3px 8px;}
 
+/* ---------- FEATURED WORK (case-study card) ---------- */
+.card-featured{background:var(--surface); border:1px solid var(--line); border-radius:16px;
+  margin:34px 0 20px; overflow:hidden;
+  transition:transform .15s ease, box-shadow .2s ease, border-color .2s;}
+.card-featured:hover{transform:translateY(-3px); box-shadow:0 26px 50px -26px rgba(14,16,21,.3); border-color:#d3d7de;}
+.card-featured .shot{position:relative; overflow:hidden; background:#160907;}
+.card-featured .shot img{display:block; width:100%; height:auto; transition:transform .5s ease;}
+.card-featured:hover .shot img{transform:scale(1.02);}
+.card-featured .info{padding:34px 36px;}
+.card-featured .info h3{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:1.45rem; margin:14px 0 2px;}
+.card-featured .info .meta{font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--ink-faint); margin:0 0 12px;}
+.card-featured .info .desc{color:var(--ink-soft); font-size:.98rem; margin:0 0 18px; max-width:70ch;}
+
+@media (max-width:820px){
+  .card-featured .info{padding:26px 24px;}
+}
+
 /* ---------- EXPERTISE ---------- */
 .exp-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:20px 48px; margin-top:34px;}
 .exp-block h4{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:1rem; margin:0 0 12px;
@@ -234,47 +251,73 @@ footer .shell{color:var(--ink-faint); font-family:'JetBrains Mono',monospace; fo
   <div class="shell">
     <p class="sec-eyebrow reveal">Selected work</p>
     <h2 class="sec-title reveal">Products I've helped ship.</h2>
-    <div class="work-grid">
 
-      <article class="card reveal">
+    <article class="card-featured reveal">
+      <div class="shot">
+        <img src="assets/dailystrong_showcase.png" alt="Daily Strong app screens — sign in, weekly plan, live workout timer, and assessment results" loading="lazy">
+      </div>
+      <div class="info">
         <span class="tag">Fitness · Solo build</span>
         <h3>Daily Strong</h3>
         <p class="meta">S3 Corp · Apr 2026 – Present</p>
-        <p class="desc">A product I designed and built solo end-to-end at S3 Corp — from architecture and subscriptions to release automation, shipped to the App Store.</p>
+        <p class="desc">A product I designed and built solo end-to-end at S3 Corp — structured weekly programs, live exercise timers, fitness assessments, and progress tracking — from architecture and subscriptions to release automation, shipped to the App Store.</p>
         <div class="chips"><span class="chip">SwiftUI</span><span class="chip">RevenueCat</span><span class="chip">Firebase</span><span class="chip">CI/CD</span></div>
-      </article>
+      </div>
+    </article>
 
-      <article class="card reveal">
+    <article class="card-featured reveal">
+      <div class="shot">
+        <img src="assets/ganbaru_showcase.png" alt="Ganbaru Method app screens — nutrition tracking, workout programs, superset tracking, and community feed" loading="lazy">
+      </div>
+      <div class="info">
         <span class="tag">Fitness · Social</span>
         <h3>Ganbaru Method</h3>
         <p class="meta">S3 Corp · Oct 2023 – Present</p>
         <p class="desc">A fitness and social platform — improved app performance by ~25% through UI and API optimization, cut crash rate with Crashlytics monitoring, and shipped in-app subscriptions via StoreKit.</p>
         <div class="chips"><span class="chip">SwiftUI</span><span class="chip">UIKit</span><span class="chip">Combine</span><span class="chip">StoreKit</span><span class="chip">Crashlytics</span></div>
-      </article>
+      </div>
+    </article>
 
-      <article class="card reveal">
+    <article class="card-featured reveal">
+      <div class="shot">
+        <img src="assets/lamviectot_showcase.png" alt="Làm Việc Tốt app screens — interactive quizzes, good-deed missions, adventure map, and daily schedule" loading="lazy">
+      </div>
+      <div class="info">
         <span class="tag">Education</span>
         <h3>Happy Lof School</h3>
         <p class="meta">S3 Corp · Apr 2023 – Oct 2023</p>
         <p class="desc">An education platform connecting schools, teachers, and families — I set up the initial architecture and delivered auth, quizzes, video learning, and scheduling with a responsive, dependable UI.</p>
         <div class="chips"><span class="chip">Swift</span><span class="chip">UIKit</span><span class="chip">SwiftUI</span><span class="chip">Firebase</span></div>
-      </article>
+      </div>
+    </article>
 
-      <article class="card reveal">
+    <article class="card-featured reveal">
+      <div class="shot">
+        <img src="assets/malto_showcase.png" alt="Malto app screens — career discovery, career quiz, and community forum" loading="lazy">
+      </div>
+      <div class="info">
         <span class="tag">Career · Cross-platform</span>
         <h3>Huong Nghiep LwL</h3>
         <p class="meta">S3 Corp · Mar 2022 – Mar 2023</p>
         <p class="desc">A career-orientation platform built cross-platform in Flutter — real-time community features via Socket.IO with structured state management, showing I can move fluidly beyond native when a project calls for it.</p>
         <div class="chips"><span class="chip">Flutter</span><span class="chip">Dart</span><span class="chip">Bloc/Cubit</span><span class="chip">Socket.IO</span></div>
-      </article>
+      </div>
+    </article>
 
-      <article class="card reveal">
+    <article class="card-featured reveal">
+      <div class="shot">
+        <img src="assets/sconnect_showcase.png" alt="S-Connect app screens — secure login, account dashboard, money transfer, and statements" loading="lazy">
+      </div>
+      <div class="info">
         <span class="tag">Fintech · Banking</span>
         <h3>S-Connect (SCB Connect)</h3>
         <p class="meta">Minerva · Dec 2020 – Jul 2021</p>
         <p class="desc">Native iOS for a digital banking app — biometric authentication, transaction flows, QR &amp; bill payment, and the kind of hardened, compliance-aware engineering that money movement demands.</p>
         <div class="chips"><span class="chip">Swift</span><span class="chip">UIKit</span><span class="chip">JWT</span><span class="chip">Biometric Auth</span></div>
-      </article>
+      </div>
+    </article>
+
+    <div class="work-grid">
 
       <article class="card reveal">
         <span class="tag">IoT · Smart Home</span>
