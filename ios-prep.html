@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Senior iOS Interview Prep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F6F8; --surface:#FFFFFF; --ink:#15171D; --ink-soft:#5A606C; --ink-faint:#8A909C;
+  --line:#E4E7EC; --accent:#F05138; --accent-deep:#C7371E;
+  --code-bg:#1B1E27; --code-line:#2A2F3B;
+  --diag-bg:#EAF0F7; --diag-ink:#1D3A5F; --diag-line:#B8CBE0;
+  --g:#1F9D63; --y:#D98C1F; --r:#E14640;
+  --k:#F0883E; --str:#9ECBFF; --com:#7D8694; --num:#79C0FF; --fn:#D2A8FF; --typ:#7EE787;
+  --maxw:1200px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-size:16px; line-height:1.7; -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- HERO ---------- */
+.hero{
+  border-bottom:1px solid var(--line);
+  background:
+    radial-gradient(120% 140% at 88% -10%, rgba(240,81,56,.10), transparent 55%),
+    linear-gradient(180deg,#fff, #fbfcfd);
+}
+.hero-inner{max-width:var(--maxw); margin:0 auto; padding:64px 40px 52px;}
+.eyebrow{
+  font-family:'JetBrains Mono',monospace; font-size:.72rem; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--accent-deep); font-weight:700; margin:0 0 18px;
+  display:flex; align-items:center; gap:12px;
+}
+.eyebrow::before{content:""; width:34px; height:2px; background:var(--accent); display:inline-block;}
+.hero h1{
+  font-family:'Space Grotesk',sans-serif; font-weight:700; letter-spacing:-.02em;
+  font-size:clamp(2.1rem,4.6vw,3.4rem); line-height:1.05; margin:0 0 20px; max-width:16ch;
+}
+.hero h1 .swift{color:var(--accent);}
+.hero p.lede{font-size:1.08rem; color:var(--ink-soft); max-width:60ch; margin:0 0 26px;}
+.legend{display:flex; gap:22px; flex-wrap:wrap; font-size:.85rem; color:var(--ink-soft);
+  font-family:'JetBrains Mono',monospace;}
+.legend span{display:inline-flex; align-items:center; gap:7px;}
+
+/* ---------- LAYOUT ---------- */
+.wrap{max-width:var(--maxw); margin:0 auto; padding:0 40px;
+  display:grid; grid-template-columns:250px 1fr; gap:48px; align-items:start;}
+
+/* ---------- SIDEBAR ---------- */
+aside{position:sticky; top:0; align-self:start; padding:36px 0;}
+aside summary{display:none;}
+.nav-title{font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--ink-faint); margin:0 0 14px; padding-left:12px;}
+.nav-link{display:flex; gap:11px; align-items:baseline; text-decoration:none; color:var(--ink-soft);
+  padding:7px 12px; border-left:2px solid transparent; border-radius:0 6px 6px 0;
+  font-size:.9rem; transition:all .15s ease; line-height:1.35;}
+.nav-link:hover{color:var(--ink); background:rgba(240,81,56,.05);}
+.nav-link.active{color:var(--ink); border-left-color:var(--accent); background:rgba(240,81,56,.07); font-weight:600;}
+.nav-num{font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--accent);
+  font-weight:700; flex-shrink:0;}
+.nav-link.active .nav-num{color:var(--accent-deep);}
+
+/* ---------- CONTENT ---------- */
+main{padding:36px 0 100px; min-width:0;}
+main hr{display:none;}
+h2{
+  font-family:'Space Grotesk',sans-serif; font-weight:700; letter-spacing:-.015em;
+  font-size:1.75rem; line-height:1.15; margin:64px 0 8px; padding-top:14px;
+  scroll-margin-top:24px; position:relative;
+}
+h2:first-of-type{margin-top:8px;}
+h2::after{content:""; display:block; width:52px; height:3px; background:var(--accent);
+  border-radius:2px; margin-top:14px;}
+h3{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:1.15rem;
+  margin:38px 0 10px; line-height:1.3; scroll-margin-top:24px;
+  display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;}
+h4{font-weight:600; font-size:1rem; margin:24px 0 6px; color:var(--ink);}
+p{margin:12px 0;}
+a{color:var(--accent-deep);}
+strong{font-weight:600; color:var(--ink);}
+ul,ol{padding-left:22px; margin:12px 0;}
+li{margin:6px 0;}
+li::marker{color:var(--accent);}
+
+/* difficulty pill */
+.lv{font-size:.62rem; line-height:1; transform:translateY(-1px);}
+.lv-g{color:var(--g);} .lv-y{color:var(--y);} .lv-r{color:var(--r);}
+
+/* blockquotes -> "lead lead" note */
+blockquote{margin:16px 0; padding:14px 20px; background:#fff; border:1px solid var(--line);
+  border-left:3px solid var(--accent); border-radius:0 10px 10px 0; color:var(--ink-soft);
+  font-size:.96rem;}
+blockquote p{margin:6px 0;}
+
+/* ---------- TABLES ---------- */
+table{border-collapse:collapse; width:100%; margin:20px 0; font-size:.92rem;
+  background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+th,td{text-align:left; padding:11px 15px; border-bottom:1px solid var(--line);
+  vertical-align:top;}
+thead th{background:#F3F1EF; background:linear-gradient(180deg,#fbf1ee,#f7ece8);
+  font-family:'Space Grotesk',sans-serif; font-weight:600; color:var(--accent-deep);
+  font-size:.82rem; letter-spacing:.01em; border-bottom:2px solid rgba(240,81,56,.25);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#fafafb;}
+td code, th code, li code, p code{
+  font-family:'JetBrains Mono',monospace; font-size:.85em; background:#EEF0F3;
+  color:var(--accent-deep); padding:2px 6px; border-radius:5px; border:1px solid #E2E5EA;
+}
+
+/* ---------- CODE (Xcode-editor style) ---------- */
+.hl{
+  background:var(--code-bg); border-radius:12px; margin:18px 0; overflow:hidden;
+  border:1px solid #10131a; box-shadow:0 10px 30px -14px rgba(20,23,29,.45);
+  position:relative;
+}
+.hl::before{
+  content:"● ● ●"; display:block; letter-spacing:4px; font-size:.6rem; color:#4a505e;
+  padding:9px 16px 0; font-family:'JetBrains Mono',monospace;
+}
+.hl pre{margin:0; padding:14px 18px 18px; overflow-x:auto;}
+.hl code,.hl pre{font-family:'JetBrains Mono',monospace; font-size:.85rem; line-height:1.6;
+  color:#E6EDF3; background:none;}
+/* pygments tokens */
+.hl .k,.hl .kd,.hl .kc,.hl .kn,.hl .kr,.hl .kt{color:var(--k); font-weight:500;}
+.hl .s,.hl .s1,.hl .s2,.hl .se,.hl .sb,.hl .sd{color:var(--str);}
+.hl .c,.hl .c1,.hl .cm,.hl .cs{color:var(--com); font-style:italic;}
+.hl .mi,.hl .mf,.hl .m,.hl .il{color:var(--num);}
+.hl .nf,.hl .fm{color:var(--fn);}
+.hl .nc,.hl .nn,.hl .nb,.hl .bp{color:var(--typ);}
+.hl .n,.hl .nv,.hl .vg,.hl .nl{color:#E6EDF3;}
+.hl .o,.hl .ow,.hl .p{color:#9BA3B0;}
+.hl .nd{color:var(--fn);}
+
+/* ---------- DIAGRAM (blueprint style) ---------- */
+.diag{
+  background:var(--diag-bg);
+  background-image:linear-gradient(var(--diag-line) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--diag-line) 1px,transparent 1px);
+  background-size:22px 22px; background-position:-1px -1px;
+  border:1px solid var(--diag-line); border-radius:12px; margin:18px 0;
+  overflow:hidden; box-shadow:none;
+}
+.diag::before{content:none;}
+.diag pre{margin:0; padding:18px 20px; overflow-x:auto;}
+.diag code, .diag pre{font-family:'JetBrains Mono',monospace; font-size:.8rem; line-height:1.5;
+  color:var(--diag-ink); background:none; white-space:pre; font-weight:500;}
+.diag .c,.diag .c1,.diag .k,.diag .s,.diag .n,.diag .o,.diag .p,.diag .err{color:var(--diag-ink) !important; font-style:normal !important;}
+
+/* checklist */
+main ul li input,
+li:has(> em){}
+ul li{}
+/* checkboxes rendered as [ ] text -> style subtly */
+
+/* footer */
+.foot{max-width:var(--maxw); margin:0 auto; padding:0 40px 70px; color:var(--ink-faint);
+  font-size:.85rem; font-family:'JetBrains Mono',monospace; text-align:center;}
+.foot em{color:var(--ink-soft); font-style:normal;}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 900px){
+  .hero-inner{padding:44px 22px 36px;}
+  .wrap{grid-template-columns:1fr; gap:0; padding:0 22px;}
+  aside{position:static; padding:18px 0 0;}
+  aside details{background:#fff; border:1px solid var(--line); border-radius:12px; padding:6px 10px;}
+  aside summary{display:flex; align-items:center; justify-content:space-between;
+    cursor:pointer; font-family:'Space Grotesk',sans-serif; font-weight:600; padding:8px;
+    list-style:none;}
+  aside summary::-webkit-details-marker{display:none;}
+  aside summary::after{content:"▾"; color:var(--accent); font-size:1rem;}
+  .nav-title{display:none;}
+  main{padding:24px 0 70px;}
+  h2{font-size:1.5rem; margin-top:46px;}
+  .foot{padding:0 22px 50px;}
+}
+@media (min-width: 901px){
+  aside details{}
+  aside details > summary{display:none;}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">Interview Prep · Master Doc</p>
+    <h1>Senior <span class="swift">iOS</span> Developer</h1>
+    <p class="lede">Tài liệu ôn tập phỏng vấn từ cơ bản đến nâng cao — Swift, concurrency, kiến trúc app, system design & behavioral. Mỗi mục: câu hỏi → cốt lõi → code/diagram → bẫy hay gặp.</p>
+    <div class="legend">
+      <span><span class="lv lv-g">●</span> Cơ bản</span>
+      <span><span class="lv lv-y">●</span> Trung–cao</span>
+      <span><span class="lv lv-r">●</span> Senior / Lead</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <aside>
+    <details open>
+      <summary>Mục lục</summary>
+      <p class="nav-title">Nội dung</p>
+      <nav id="toc">
+        <a class="nav-link" href="#1-swift-language-core"><span class="nav-num">01</span><span class="nav-txt">Swift Language Core</span></a>
+<a class="nav-link" href="#2-memory-management-arc"><span class="nav-num">02</span><span class="nav-txt">Memory Management (ARC)</span></a>
+<a class="nav-link" href="#3-concurrency"><span class="nav-num">03</span><span class="nav-txt">Concurrency</span></a>
+<a class="nav-link" href="#4-uikit-fundamentals"><span class="nav-num">04</span><span class="nav-txt">UIKit Fundamentals</span></a>
+<a class="nav-link" href="#5-swiftui"><span class="nav-num">05</span><span class="nav-txt">SwiftUI</span></a>
+<a class="nav-link" href="#6-combine"><span class="nav-num">06</span><span class="nav-txt">Combine</span></a>
+<a class="nav-link" href="#7-networking-security"><span class="nav-num">07</span><span class="nav-txt">Networking & Security</span></a>
+<a class="nav-link" href="#8-app-architecture"><span class="nav-num">08</span><span class="nav-txt">App Architecture</span></a>
+<a class="nav-link" href="#9-testing"><span class="nav-num">09</span><span class="nav-txt">Testing</span></a>
+<a class="nav-link" href="#10-system-design-cho-ios"><span class="nav-num">10</span><span class="nav-txt">System Design cho iOS</span></a>
+<a class="nav-link" href="#11-behavioral-soft-skills"><span class="nav-num">11</span><span class="nav-txt">Behavioral / Soft Skills</span></a>
+<a class="nav-link" href="#12-checklist-on-nhanh"><span class="nav-num">12</span><span class="nav-txt">Checklist ôn nhanh</span></a>
+      </nav>
+    </details>
+  </aside>
+  <main id="content">
+    
+<blockquote>
+<p>Tài liệu ôn tập phỏng vấn cho vị trí <strong>Senior / Lead iOS</strong>.
+Cấu trúc: mỗi mục có <strong>câu hỏi thường gặp → câu trả lời cốt lõi → code/diagram → bẫy hay gặp</strong>.
+Ký hiệu: <span class="lv lv-g" title="Cơ bản">●</span> cơ bản (bắt buộc trả lời trôi chảy) · <span class="lv lv-y" title="Trung–cao">●</span> trung–cao · <span class="lv lv-r" title="Senior">●</span> senior/lead (đào sâu).</p>
+</blockquote>
+<hr/>
+<hr/>
+<h2 id="1-swift-language-core">1. Swift Language Core</h2>
+<h3 id="q11-value-type-vs-reference-type-khac-nhau-o-au"><span class="lv lv-g" title="Cơ bản">●</span> Q1.1 — Value type vs Reference type. Khác nhau ở đâu?</h3>
+<p><strong>Cốt lõi:</strong>
+- <strong>Value type</strong> (<code>struct</code>, <code>enum</code>, tuple): copy khi gán/truyền. Mỗi biến giữ 1 bản sao độc lập.
+- <strong>Reference type</strong> (<code>class</code>, <code>actor</code>, closure): truyền reference (con trỏ). Nhiều biến trỏ về cùng 1 instance trên heap.</p>
+<div class="diag"><pre><span></span><code>VALUE TYPE (struct)                REFERENCE TYPE (class)
+┌──────────┐                       ┌──────────┐      ┌──────────┐
+│ var a    │──► [x:1, y:2]         │ var a    │──┐   │          │
+├──────────┤                       ├──────────┤  ├──►│ Heap obj │
+│ var b=a  │──► [x:1, y:2] (copy)  │ var b=a  │──┘   │ [x:1]    │
+└──────────┘                       └──────────┘      └──────────┘
+  đổi b KHÔNG ảnh hưởng a            đổi b ẢNH HƯỞNG a (cùng obj)
+</code></pre></div>
+<p><strong>Bẫy hay hỏi:</strong>
+- Struct nằm stack hay heap? → Thường stack, <strong>nhưng</strong> nếu struct chứa reference type hoặc bị capture bởi closure/escaping, phần đó vẫn nằm heap.
+- <strong>Copy-on-Write (COW):</strong> <code>Array</code>, <code>Dictionary</code>, <code>String</code> là struct nhưng KHÔNG copy ngay khi gán — chỉ copy thật sự khi có mutation. Đây là tối ưu của stdlib, không tự động có cho struct bạn tự viết.</p>
+<p><strong>Khi nào chọn struct / class?</strong>
+- Struct: model dữ liệu, immutable, không cần identity, không kế thừa.
+- Class: cần identity (so sánh <code>===</code>), cần kế thừa, cần lifecycle (deinit), interop Objective-C.</p>
+<hr/>
+<h3 id="q12-protocol-oriented-programming-pop-la-gi-khac-oop-the-nao"><span class="lv lv-y" title="Trung–cao">●</span> Q1.2 — Protocol-Oriented Programming (POP) là gì? Khác OOP thế nào?</h3>
+<p><strong>Cốt lõi:</strong> Ưu tiên <strong>composition qua protocol + protocol extension</strong> thay vì kế thừa class. Swift stdlib được thiết kế theo hướng này (<code>Collection</code>, <code>Equatable</code>...).</p>
+<div class="hl"><pre><span></span><code><span class="kd">protocol</span><span class="w"> </span><span class="nc">Drawable</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">func</span><span class="w"> </span><span class="nf">draw</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="c1">// Protocol extension: cung cấp default implementation</span>
+<span class="kd">extension</span><span class="w"> </span><span class="nc">Drawable</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">func</span><span class="w"> </span><span class="nf">draw</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="bp">print</span><span class="p">(</span><span class="s">"Default drawing"</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">struct</span><span class="w"> </span><span class="nc">Circle</span><span class="p">:</span><span class="w"> </span><span class="n">Drawable</span><span class="w"> </span><span class="p">{}</span><span class="w">   </span><span class="c1">// dùng default</span>
+<span class="kd">struct</span><span class="w"> </span><span class="nc">Square</span><span class="p">:</span><span class="w"> </span><span class="n">Drawable</span><span class="w"> </span><span class="p">{</span><span class="w">    </span><span class="c1">// override</span>
+<span class="w">    </span><span class="kd">func</span><span class="w"> </span><span class="nf">draw</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="bp">print</span><span class="p">(</span><span class="s">"Square"</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Bẫy senior — Static vs Dynamic dispatch trong protocol extension:</strong></p>
+<div class="hl"><pre><span></span><code><span class="kd">protocol</span><span class="w"> </span><span class="nc">Greet</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kd">func</span><span class="w"> </span><span class="nf">hello</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
+<span class="kd">extension</span><span class="w"> </span><span class="nc">Greet</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">func</span><span class="w"> </span><span class="nf">hello</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="bp">print</span><span class="p">(</span><span class="s">"protocol hello"</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="kd">func</span><span class="w"> </span><span class="nf">bye</span><span class="p">()</span><span class="w">   </span><span class="p">{</span><span class="w"> </span><span class="bp">print</span><span class="p">(</span><span class="s">"protocol bye"</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w">  </span><span class="c1">// KHÔNG khai báo trong protocol</span>
+<span class="p">}</span>
+<span class="kd">struct</span><span class="w"> </span><span class="nc">A</span><span class="p">:</span><span class="w"> </span><span class="n">Greet</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">func</span><span class="w"> </span><span class="nf">hello</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="bp">print</span><span class="p">(</span><span class="s">"A hello"</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="kd">func</span><span class="w"> </span><span class="nf">bye</span><span class="p">()</span><span class="w">   </span><span class="p">{</span><span class="w"> </span><span class="bp">print</span><span class="p">(</span><span class="s">"A bye"</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="nv">a</span><span class="p">:</span><span class="w"> </span><span class="n">Greet</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">A</span><span class="p">()</span>
+<span class="n">a</span><span class="p">.</span><span class="n">hello</span><span class="p">()</span><span class="w">  </span><span class="c1">// "A hello"      → hello() có trong protocol → dynamic dispatch</span>
+<span class="n">a</span><span class="p">.</span><span class="n">bye</span><span class="p">()</span><span class="w">    </span><span class="c1">// "protocol bye" → bye() KHÔNG trong protocol → static dispatch theo kiểu tĩnh (Greet)</span>
+</code></pre></div>
+<p>→ Method <strong>khai báo trong protocol</strong> = dynamic dispatch (chọn theo type thật).
+→ Method <strong>chỉ có trong extension</strong> = static dispatch (chọn theo type khai báo). Đây là câu hỏi kinh điển bẫy người mới.</p>
+<hr/>
+<h3 id="q13-some-vs-any-opaque-type-vs-existential"><span class="lv lv-y" title="Trung–cao">●</span> Q1.3 — <code>some</code> vs <code>any</code> (opaque type vs existential)</h3>
+<div class="hl"><pre><span></span><code><span class="kd">func</span><span class="w"> </span><span class="nf">makeShape</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="n">some</span><span class="w"> </span><span class="n">Shape</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Circle</span><span class="p">()</span><span class="w"> </span><span class="p">}</span><span class="w">   </span><span class="c1">// opaque: 1 concrete type cụ thể, ẩn đi</span>
+<span class="kd">func</span><span class="w"> </span><span class="nf">makeShape</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="n">any</span><span class="w"> </span><span class="n">Shape</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span><span class="w">          </span><span class="c1">// existential: box động, có thể là nhiều type</span>
+</code></pre></div>
+<ul>
+<li><code>some</code>: compiler biết chính xác type thật (chỉ ẩn với caller) → <strong>không có overhead</strong>, tối ưu tốt.</li>
+<li><code>any</code>: existential container, có <strong>runtime overhead</strong> (dynamic dispatch + có thể heap allocation). Dùng khi cần lưu nhiều type khác nhau trong 1 mảng.</li>
+</ul>
+<hr/>
+<h3 id="q14-optional-if-let-guard-let-optional-chaining"><span class="lv lv-g" title="Cơ bản">●</span> Q1.4 — Optional. <code>if let</code> / <code>guard let</code> / <code>??</code> / optional chaining</h3>
+<div class="hl"><pre><span></span><code><span class="k">guard</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nv">user</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">}</span><span class="w">   </span><span class="c1">// early exit, giữ scope phẳng</span>
+<span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nv">user</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span><span class="w">                      </span><span class="c1">// shorthand (Swift 5.7+)</span>
+<span class="kd">let</span><span class="w"> </span><span class="nv">name</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">user</span><span class="p">?.</span><span class="n">name</span><span class="w"> </span><span class="p">??</span><span class="w"> </span><span class="s">"Guest"</span><span class="w">         </span><span class="c1">// nil-coalescing</span>
+</code></pre></div>
+<p><strong>Bẫy:</strong> <code>try?</code> biến error thành <code>nil</code> (nuốt lỗi). <code>as?</code> là conditional cast. Tránh force unwrap <code>!</code> trừ khi chắc chắn 100%.</p>
+<hr/>
+<h3 id="q15-escaping-vs-non-escaping-closure"><span class="lv lv-y" title="Trung–cao">●</span> Q1.5 — <code>escaping</code> vs <code>non-escaping</code> closure</h3>
+<ul>
+<li><strong>Non-escaping</strong> (mặc định): closure được gọi xong trong scope của hàm.</li>
+<li><strong><code>@escaping</code></strong>: closure được lưu lại và gọi sau khi hàm return (completion handler, stored property). → Bắt buộc <code>self.</code> tường minh → dễ tạo retain cycle.</li>
+</ul>
+<div class="hl"><pre><span></span><code><span class="kd">func</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="n">completion</span><span class="p">:</span><span class="w"> </span><span class="p">@</span><span class="n">escaping</span><span class="w"> </span><span class="p">(</span><span class="n">Data</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Void</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">URLSession</span><span class="p">.</span><span class="n">shared</span><span class="p">.</span><span class="n">dataTask</span><span class="p">(</span><span class="n">with</span><span class="p">:</span><span class="w"> </span><span class="n">url</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kc">_</span><span class="p">,</span><span class="w"> </span><span class="kc">_</span><span class="w"> </span><span class="k">in</span>
+<span class="w">        </span><span class="n">completion</span><span class="p">(</span><span class="n">data</span><span class="p">!)</span><span class="w">   </span><span class="c1">// escaping vì chạy sau khi load() return</span>
+<span class="w">    </span><span class="p">}.</span><span class="n">resume</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr/>
+<h2 id="2-memory-management-arc">2. Memory Management (ARC)</h2>
+<h3 id="q21-arc-hoat-ong-the-nao"><span class="lv lv-g" title="Cơ bản">●</span> Q2.1 — ARC hoạt động thế nào?</h3>
+<p><strong>Cốt lõi:</strong> Automatic Reference Counting. Mỗi object giữ 1 <strong>retain count</strong>. <code>+1</code> khi có strong reference mới, <code>-1</code> khi mất. Count = 0 → <code>deinit</code> → giải phóng. <strong>Compile-time</strong>, không phải garbage collector runtime như Java/Kotlin.</p>
+<div class="diag"><pre><span></span><code>strong ref +1 ──► retainCount = 2
+                       │
+    nil / out-of-scope │ -1
+                       ▼
+                  retainCount = 0 ──► deinit() ──► freed
+</code></pre></div>
+<hr/>
+<h3 id="q22-retain-cycle-weak-vs-unowned-cau-hoi-tu"><span class="lv lv-r" title="Senior">●</span> Q2.2 — Retain cycle. weak vs unowned. (câu hỏi TỦ)</h3>
+<p><strong>Retain cycle:</strong> 2 object giữ strong reference lẫn nhau → count không bao giờ về 0 → <strong>memory leak</strong>.</p>
+<div class="diag"><pre><span></span><code>┌─────────────┐  strong  ┌─────────────┐
+│  ViewModel  │─────────►│   Closure   │
+│             │◄─────────│  (captures  │
+└─────────────┘  strong  │   self)     │
+      LEAK               └─────────────┘
+</code></pre></div>
+<p><strong>Giải pháp — capture list:</strong></p>
+<div class="hl"><pre><span></span><code><span class="c1">// weak: reference có thể nil → dùng khi object kia có thể bị giải phóng trước</span>
+<span class="n">service</span><span class="p">.</span><span class="n">fetch</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="kr">weak</span><span class="w"> </span><span class="kc">self</span><span class="p">]</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="k">in</span>
+<span class="w">    </span><span class="k">guard</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nv">self</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="kc">self</span><span class="p">.</span><span class="n">handle</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// unowned: giả định object kia LUÔN còn sống → nếu sai → CRASH</span>
+<span class="n">button</span><span class="p">.</span><span class="n">action</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">[</span><span class="kr">unowned</span><span class="w"> </span><span class="kc">self</span><span class="p">]</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kc">self</span><span class="p">.</span><span class="n">tap</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>weak</code></th>
+<th><code>unowned</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Optional</td>
+<td>Có (tự thành <code>nil</code>)</td>
+<td>Không</td>
+</tr>
+<tr>
+<td>Khi object kia bị dealloc</td>
+<td>An toàn (nil)</td>
+<td><strong>Crash</strong> nếu truy cập</td>
+</tr>
+<tr>
+<td>Dùng khi</td>
+<td>Lifecycle không chắc chắn</td>
+<td>Chắc chắn cùng lifetime (vd parent-child bắt buộc)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rule of thumb:</strong> không chắc → dùng <code>weak</code>. <code>unowned</code> chỉ khi bạn CHẮC CHẮN reference kia sống ít nhất bằng closure.</p>
+<p><strong>Delegate luôn <code>weak</code>:</strong></p>
+<div class="hl"><pre><span></span><code><span class="kr">weak</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="nv">delegate</span><span class="p">:</span><span class="w"> </span><span class="n">MyDelegate</span><span class="p">?</span><span class="w">   </span><span class="c1">// tránh cycle giữa parent ↔ child</span>
+</code></pre></div>
+<p>→ Vì thế delegate protocol thường <code>: AnyObject</code> (chỉ class mới weak được).</p>
+<hr/>
+<h3 id="q23-cach-phat-hien-memory-leak"><span class="lv lv-y" title="Trung–cao">●</span> Q2.3 — Cách phát hiện memory leak?</h3>
+<ul>
+<li><strong>Xcode Memory Graph Debugger</strong> (nút debug memory graph) → nhìn vòng tròn reference.</li>
+<li><strong>Instruments → Leaks / Allocations</strong>.</li>
+<li>Đặt <code>print</code> / breakpoint trong <code>deinit</code> → nếu view controller pop mà <code>deinit</code> không gọi → có leak.</li>
+</ul>
+<hr/>
+<h2 id="3-concurrency">3. Concurrency</h2>
+<h3 id="q31-gcd-vs-swift-concurrency"><span class="lv lv-g" title="Cơ bản">●</span> Q3.1 — GCD vs Swift Concurrency</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>GCD</th>
+<th>Swift Concurrency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Đơn vị</td>
+<td>Queue + Thread</td>
+<td>Task + Continuation</td>
+</tr>
+<tr>
+<td>Khi chờ I/O</td>
+<td><strong>Block thread</strong> (giữ thread)</td>
+<td><strong>Suspend</strong> — trả thread về pool</td>
+</tr>
+<tr>
+<td>Thread explosion</td>
+<td>Có nguy cơ</td>
+<td>Cooperative pool (≈ số core)</td>
+</tr>
+<tr>
+<td>Data race</td>
+<td>Runtime, crash ẩn</td>
+<td><strong>Compile-time</strong> (Sendable/actor)</td>
+</tr>
+<tr>
+<td>Cancellation</td>
+<td>Cờ thủ công, không lan truyền</td>
+<td>Structured, tự propagate</td>
+</tr>
+<tr>
+<td>Code</td>
+<td>Nested callback</td>
+<td>Linear (giống sync)</td>
+</tr>
+</tbody>
+</table>
+<div class="diag"><pre><span></span><code>GCD (blocking)                    Swift Concurrency (suspend/resume)
+Thread ──► [chờ I/O...] giữ chết   Task ──await──► suspend, trả thread
+                                                    ▼
+                                   resume trên thread khác khi xong
+</code></pre></div>
+<hr/>
+<h3 id="q32-asyncawait-task-async-let-taskgroup"><span class="lv lv-y" title="Trung–cao">●</span> Q3.2 — async/await, Task, async let, TaskGroup</h3>
+<div class="hl"><pre><span></span><code><span class="c1">// Tuần tự</span>
+<span class="kd">let</span><span class="w"> </span><span class="nv">user</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="k">try</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">fetchUser</span><span class="p">()</span>
+<span class="kd">let</span><span class="w"> </span><span class="nv">posts</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="k">try</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">fetchPosts</span><span class="p">()</span>
+
+<span class="c1">// Song song, số lượng cố định → async let</span>
+<span class="k">async</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nv">user</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">fetchUser</span><span class="p">()</span>
+<span class="k">async</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nv">posts</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">fetchPosts</span><span class="p">()</span>
+<span class="kd">let</span><span class="w"> </span><span class="nv">profile</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">Profile</span><span class="p">(</span><span class="n">user</span><span class="p">:</span><span class="w"> </span><span class="k">try</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">user</span><span class="p">,</span><span class="w"> </span><span class="n">posts</span><span class="p">:</span><span class="w"> </span><span class="k">try</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">posts</span><span class="p">)</span>
+
+<span class="c1">// Song song, số lượng động → TaskGroup</span>
+<span class="k">try</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">withThrowingTaskGroup</span><span class="p">(</span><span class="n">of</span><span class="p">:</span><span class="w"> </span><span class="n">Post</span><span class="p">.</span><span class="kc">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="k">in</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">ids</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">group</span><span class="p">.</span><span class="n">addTask</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">try</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">fetchPost</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="k">try</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">post</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">results</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">post</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Structured vs Unstructured:</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>async let</code> / <code>TaskGroup</code></th>
+<th><code>Task { }</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Loại</td>
+<td>Structured</td>
+<td>Unstructured</td>
+</tr>
+<tr>
+<td>Lifetime</td>
+<td>Ràng buộc scope cha</td>
+<td>Độc lập, sống lâu hơn hàm</td>
+</tr>
+<tr>
+<td>Cancel</td>
+<td>Tự propagate</td>
+<td>Không tự theo cha</td>
+</tr>
+<tr>
+<td>Bắt buộc await</td>
+<td>Có (compiler)</td>
+<td>Không (fire-and-forget được)</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>Task { }</code> ≈ <code>DispatchQueue.async { }</code></strong> về mục đích, nhưng <code>Task {}</code> tự kế thừa actor context + có cancellation chuẩn hóa. <code>Task.detached {}</code> mới giống GCD thuần (không kế thừa gì).</p>
+<hr/>
+<h3 id="q33-actor-mainactor-sendable"><span class="lv lv-r" title="Senior">●</span> Q3.3 — Actor, MainActor, Sendable</h3>
+<div class="hl"><pre><span></span><code><span class="kd">actor</span><span class="w"> </span><span class="n">Cache</span><span class="w"> </span><span class="p">{</span><span class="w">              </span><span class="c1">// serial access, không cần lock, compiler chống race</span>
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="nv">store</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="nb">String</span><span class="p">:</span><span class="w"> </span><span class="n">Data</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[:]</span>
+<span class="w">    </span><span class="kd">func</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="kc">_</span><span class="w"> </span><span class="n">k</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="n">Data</span><span class="p">?</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">store</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="p">@</span><span class="n">MainActor</span><span class="w">                 </span><span class="c1">// mọi thứ chạy main thread — chuẩn cho ViewModel</span>
+<span class="kr">final</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">ProfileVM</span><span class="p">:</span><span class="w"> </span><span class="n">ObservableObject</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">@</span><span class="n">Published</span><span class="w"> </span><span class="kd">var</span><span class="w"> </span><span class="nv">posts</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="n">Post</span><span class="p">]</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Actor reentrancy (bẫy senior):</strong> giữa 2 <code>await</code> point trong 1 actor method, state có thể bị method khác chen vào sửa. <code>await</code> = điểm suspend = actor có thể phục vụ request khác. → Luôn re-check state sau mỗi <code>await</code> bên trong actor.</p>
+<p><strong>Sendable:</strong> protocol đánh dấu type an toàn truyền qua actor boundary. Swift 6 strict mode → không Sendable mà truyền qua boundary = <strong>lỗi build</strong>.
+- <code>struct</code> với property Sendable → tự động Sendable.
+- <code>class</code> → phải immutable, hoặc <code>@unchecked Sendable</code> + tự lo thread-safe (lock/actor).</p>
+<p><strong><code>nonisolated</code>:</strong> thoát isolation cho method không đụng state (pure function) trong class <code>@MainActor</code>.</p>
+<hr/>
+<h3 id="q34-continuation-bridge-callback-async"><span class="lv lv-y" title="Trung–cao">●</span> Q3.4 — Continuation (bridge callback → async)</h3>
+<div class="hl"><pre><span></span><code><span class="c1">// (T?, Error?) -&gt; Void  →  withCheckedThrowingContinuation</span>
+<span class="kd">func</span><span class="w"> </span><span class="nf">fetchUser</span><span class="p">()</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kr">throws</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">withCheckedThrowingContinuation</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="k">in</span>
+<span class="w">        </span><span class="n">legacyFetchUser</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">user</span><span class="p">,</span><span class="w"> </span><span class="n">error</span><span class="w"> </span><span class="k">in</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nv">error</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">resume</span><span class="p">(</span><span class="n">throwing</span><span class="p">:</span><span class="w"> </span><span class="n">error</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nv">user</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">resume</span><span class="p">(</span><span class="n">returning</span><span class="p">:</span><span class="w"> </span><span class="n">user</span><span class="p">)</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">resume</span><span class="p">(</span><span class="n">throwing</span><span class="p">:</span><span class="w"> </span><span class="n">URLError</span><span class="p">(.</span><span class="n">unknown</span><span class="p">))</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Quy tắc:</strong> <code>resume()</code> phải gọi <strong>đúng 1 lần</strong> — gọi 2 lần hoặc quên gọi → crash (bản <code>Checked</code>) / undefined (bản <code>Unsafe</code>). Chọn:
+- Callback không có Error → <code>withCheckedContinuation</code>
+- Callback có Error / <code>Result</code> → <code>withCheckedThrowingContinuation</code> (dùng <code>resume(with:)</code> cho <code>Result</code>)</p>
+<hr/>
+<h2 id="4-uikit-fundamentals">4. UIKit Fundamentals</h2>
+<h3 id="q41-uiviewcontroller-lifecycle"><span class="lv lv-g" title="Cơ bản">●</span> Q4.1 — UIViewController lifecycle</h3>
+<div class="diag"><pre><span></span><code>init(coder/frame)
+   │
+loadView()              ← tạo view hierarchy
+   │
+viewDidLoad()           ← 1 LẦN duy nhất, setup UI/data
+   │
+viewWillAppear()        ← MỖI lần sắp hiện (có thể nhiều lần)
+   │
+viewDidAppear()         ← đã hiện, bắt đầu animation/analytics
+   │       ▲
+   ▼       │  (khi rời màn hình)
+viewWillDisappear()
+   │
+viewDidDisappear()
+</code></pre></div>
+<p><strong>Bẫy:</strong> <code>viewDidLoad</code> chỉ chạy 1 lần → không đặt logic cần refresh mỗi lần vào đây (đặt vào <code>viewWillAppear</code>). Layout frame chính xác chỉ có ở <code>viewDidLayoutSubviews</code>, KHÔNG phải <code>viewDidLoad</code>.</p>
+<hr/>
+<h3 id="q42-uitableview-toi-uu-diffable-data-source"><span class="lv lv-y" title="Trung–cao">●</span> Q4.2 — UITableView tối ưu &amp; Diffable Data Source</h3>
+<p><strong>Cell reuse:</strong> <code>dequeueReusableCell</code> → tái sử dụng cell ngoài màn hình thay vì tạo mới → tiết kiệm memory. Nhớ reset state cell trong <code>prepareForReuse()</code>.</p>
+<p><strong>Diffable Data Source</strong> (iOS 13+): thay <code>reloadData()</code> thủ công bằng snapshot → tự animate diff, tránh crash "inconsistent state", thread-safe hơn.</p>
+<div class="hl"><pre><span></span><code><span class="kd">var</span><span class="w"> </span><span class="nv">snapshot</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="bp">NSDiffableDataSourceSnapshot</span><span class="p">&lt;</span><span class="n">Section</span><span class="p">,</span><span class="w"> </span><span class="n">Item</span><span class="p">&gt;()</span>
+<span class="n">snapshot</span><span class="p">.</span><span class="n">appendSections</span><span class="p">([.</span><span class="n">main</span><span class="p">])</span>
+<span class="n">snapshot</span><span class="p">.</span><span class="n">appendItems</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+<span class="n">dataSource</span><span class="p">.</span><span class="n">apply</span><span class="p">(</span><span class="n">snapshot</span><span class="p">,</span><span class="w"> </span><span class="n">animatingDifferences</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+</code></pre></div>
+<hr/>
+<h3 id="q43-responder-chain"><span class="lv lv-y" title="Trung–cao">●</span> Q4.3 — Responder Chain</h3>
+<p>Sự kiện touch/event đi ngược từ view sâu nhất lên: <code>UIView → superview → ... → UIViewController → UIWindow → UIApplication → AppDelegate</code>. Ai <code>canBecomeFirstResponder</code> xử lý trước.</p>
+<hr/>
+<h2 id="5-swiftui">5. SwiftUI</h2>
+<h3 id="q51-property-wrappers-data-flow"><span class="lv lv-g" title="Cơ bản">●</span> Q5.1 — Property wrappers &amp; data flow</h3>
+<table>
+<thead>
+<tr>
+<th>Wrapper</th>
+<th>Sở hữu?</th>
+<th>Dùng khi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>@State</code></td>
+<td>Có</td>
+<td>State cục bộ, value type, private trong 1 view</td>
+</tr>
+<tr>
+<td><code>@Binding</code></td>
+<td>Không</td>
+<td>Nhận tham chiếu 2 chiều từ parent</td>
+</tr>
+<tr>
+<td><code>@StateObject</code></td>
+<td><strong>Có</strong></td>
+<td>View <strong>tạo &amp; sở hữu</strong> ObservableObject (1 lần)</td>
+</tr>
+<tr>
+<td><code>@ObservedObject</code></td>
+<td>Không</td>
+<td>View <strong>nhận</strong> object từ ngoài (không own lifecycle)</td>
+</tr>
+<tr>
+<td><code>@EnvironmentObject</code></td>
+<td>Không</td>
+<td>Inject xuyên nhiều tầng view</td>
+</tr>
+<tr>
+<td><code>@Environment</code></td>
+<td>Không</td>
+<td>Đọc giá trị hệ thống (colorScheme, dismiss...)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bẫy TỦ — <code>@StateObject</code> vs <code>@ObservedObject</code>:</strong></p>
+<div class="hl"><pre><span></span><code>@StateObject:   view tạo ra object → SwiftUI GIỮ nó qua các lần re-render
+@ObservedObject: object đến từ ngoài → nếu parent re-render tạo lại → MẤT state
+</code></pre></div>
+<p>→ Object mà chính view khởi tạo → <strong>luôn</strong> <code>@StateObject</code>. Dùng nhầm <code>@ObservedObject</code> → object bị recreate mỗi lần redraw → bug mất data.</p>
+<p><strong>iOS 17+ <code>@Observable</code> macro</strong> thay dần <code>ObservableObject</code>/<code>@Published</code> — tracking tự động, ít re-render thừa hơn.</p>
+<hr/>
+<h3 id="q52-view-identity-lifecycle"><span class="lv lv-y" title="Trung–cao">●</span> Q5.2 — View identity &amp; lifecycle</h3>
+<p>SwiftUI <code>View</code> là <strong>value type mô tả UI</strong>, không phải object thật. SwiftUI diff cây view và chỉ update phần đổi. <strong>Identity</strong> (<code>.id()</code>, vị trí structural) quyết định view được giữ hay tái tạo. <code>body</code> có thể gọi nhiều lần → không đặt side-effect nặng trong <code>body</code>.</p>
+<hr/>
+<h2 id="6-combine">6. Combine</h2>
+<h3 id="q61-publisher-subscriber-operator"><span class="lv lv-y" title="Trung–cao">●</span> Q6.1 — Publisher / Subscriber / Operator</h3>
+<div class="diag"><pre><span></span><code>Publisher ──► Operator(s) ──► Subscriber
+ (phát)        (biến đổi)      (nhận + demand)
+</code></pre></div>
+<div class="hl"><pre><span></span><code><span class="n">searchText</span>
+<span class="w">    </span><span class="p">.</span><span class="n">debounce</span><span class="p">(</span><span class="k">for</span><span class="p">:</span><span class="w"> </span><span class="p">.</span><span class="n">milliseconds</span><span class="p">(</span><span class="mi">300</span><span class="p">),</span><span class="w"> </span><span class="n">scheduler</span><span class="p">:</span><span class="w"> </span><span class="n">RunLoop</span><span class="p">.</span><span class="n">main</span><span class="p">)</span><span class="w">  </span><span class="c1">// chống gõ liên tục</span>
+<span class="w">    </span><span class="p">.</span><span class="n">removeDuplicates</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="n">flatMap</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="kc">self</span><span class="p">.</span><span class="n">api</span><span class="p">.</span><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="w"> </span><span class="p">}</span><span class="w">                 </span><span class="c1">// đổi stream</span>
+<span class="w">    </span><span class="p">.</span><span class="n">receive</span><span class="p">(</span><span class="n">on</span><span class="p">:</span><span class="w"> </span><span class="n">DispatchQueue</span><span class="p">.</span><span class="n">main</span><span class="p">)</span><span class="w">                             </span><span class="c1">// về main để update UI</span>
+<span class="w">    </span><span class="p">.</span><span class="n">sink</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">completion</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">receiveValue</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">results</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">.</span><span class="n">store</span><span class="p">(</span><span class="k">in</span><span class="p">:</span><span class="w"> </span><span class="p">&amp;</span><span class="n">cancellables</span><span class="p">)</span><span class="w">                                    </span><span class="c1">// giữ subscription sống</span>
+</code></pre></div>
+<p><strong>Bẫy:</strong> quên <code>.store(in:)</code> → subscription bị dealloc ngay → không nhận value. <code>[weak self]</code> trong <code>sink</code> để tránh retain cycle. <code>receive(on:)</code> khác <code>subscribe(on:)</code>: cái đầu đổi thread cho downstream, cái sau cho upstream/subscription.</p>
+<p><strong>Combine vs Swift Concurrency:</strong> Combine mạnh cho <strong>stream nhiều giá trị theo thời gian</strong> (UI binding, debounce). async/await mạnh cho <strong>one-shot async</strong> (1 request → 1 kết quả). Xu hướng mới nghiêng về Concurrency + <code>@Observable</code>, nhưng Combine vẫn phổ biến trong codebase hiện có.</p>
+<hr/>
+<h2 id="7-networking-security">7. Networking &amp; Security</h2>
+<h3 id="q71-urlsession-codable"><span class="lv lv-g" title="Cơ bản">●</span> Q7.1 — URLSession &amp; Codable</h3>
+<div class="hl"><pre><span></span><code><span class="kd">struct</span><span class="w"> </span><span class="nc">User</span><span class="p">:</span><span class="w"> </span><span class="n">Codable</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nv">id</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="p">;</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nv">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w"> </span><span class="p">}</span>
+
+<span class="kd">func</span><span class="w"> </span><span class="nf">fetch</span><span class="p">()</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kr">throws</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">response</span><span class="p">)</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="k">try</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">URLSession</span><span class="p">.</span><span class="n">shared</span><span class="p">.</span><span class="n">data</span><span class="p">(</span><span class="n">from</span><span class="p">:</span><span class="w"> </span><span class="n">url</span><span class="p">)</span>
+<span class="w">    </span><span class="k">guard</span><span class="w"> </span><span class="p">(</span><span class="n">response</span><span class="w"> </span><span class="k">as</span><span class="p">?</span><span class="w"> </span><span class="n">HTTPURLResponse</span><span class="p">)?.</span><span class="n">statusCode</span><span class="w"> </span><span class="p">==</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="n">URLError</span><span class="p">(.</span><span class="n">badServerResponse</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="k">try</span><span class="w"> </span><span class="n">JSONDecoder</span><span class="p">().</span><span class="n">decode</span><span class="p">(</span><span class="n">User</span><span class="p">.</span><span class="kc">self</span><span class="p">,</span><span class="w"> </span><span class="n">from</span><span class="p">:</span><span class="w"> </span><span class="n">data</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><code>CodingKeys</code> để map key khác tên. <code>keyDecodingStrategy = .convertFromSnakeCase</code> cho API snake_case.</p>
+<hr/>
+<h3 id="q72-security-rat-hay-hoi-o-fintechbanking"><span class="lv lv-r" title="Senior">●</span> Q7.2 — Security (rất hay hỏi ở fintech/banking)</h3>
+<table>
+<thead>
+<tr>
+<th>Chủ đề</th>
+<th>Cốt lõi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Keychain</strong></td>
+<td>Lưu token/credential an toàn (mã hoá bởi Secure Enclave), tồn tại sau khi xoá app tuỳ config. KHÔNG lưu token trong <code>UserDefaults</code>.</td>
+</tr>
+<tr>
+<td><strong>SSL Pinning</strong></td>
+<td>Pin certificate/public key để chống man-in-the-middle. Verify trong <code>urlSession(_:didReceive:)</code>.</td>
+</tr>
+<tr>
+<td><strong>Secure Enclave</strong></td>
+<td>Coprocessor tách biệt, giữ private key không bao giờ rời chip. Dùng cho biometric key.</td>
+</tr>
+<tr>
+<td><strong>AES-GCM</strong></td>
+<td>Symmetric encryption có authentication (chống sửa đổi). Dùng <code>CryptoKit</code>.</td>
+</tr>
+<tr>
+<td><strong>Jailbreak detection</strong></td>
+<td>Check file paths, <code>fork()</code>, URL scheme — không tuyệt đối nhưng tăng rào cản.</td>
+</tr>
+<tr>
+<td><strong>Biometric</strong></td>
+<td><code>LAContext</code> (Face ID / Touch ID). Kết hợp Keychain <code>.biometryCurrentSet</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Token refresh (banking):</strong> access token ngắn hạn + refresh token. Khi 401 → gọi refresh → retry request gốc. Cần <strong>serialize</strong> refresh (nhiều request 401 cùng lúc chỉ refresh 1 lần) — actor hoặc queue rất hợp cho việc này.</p>
+<p><strong>Idempotency &amp; Nonce (fintech):</strong> idempotency key để retry an toàn không double-charge; nonce chống replay attack. TOTP/SoftOTP: sinh mã theo thời gian (RFC 6238).</p>
+<hr/>
+<h2 id="8-app-architecture">8. App Architecture</h2>
+<blockquote>
+<p>⭐ Phần <strong>quan trọng nhất</strong> với vị trí senior. Câu hỏi thường ở dạng: <em>"Bạn chọn kiến trúc nào cho dự án X? Tại sao? Trade-off?"</em> — không có đáp án "đúng tuyệt đối", quan trọng là lý luận trade-off.</p>
+</blockquote>
+<h3 id="q81-mvc-apples-va-van-e-cua-no"><span class="lv lv-g" title="Cơ bản">●</span> Q8.1 — MVC (Apple's) và vấn đề của nó</h3>
+<div class="diag"><pre><span></span><code>      ┌──────────────┐
+      │  Controller  │◄──► View
+      │ (ViewController)
+      └──────┬───────┘
+             ▼
+          Model
+</code></pre></div>
+<p><strong>Vấn đề:</strong> ViewController phình to (Massive View Controller) — ôm cả UI, business logic, networking, data. Khó test, khó maintain.</p>
+<hr/>
+<h3 id="q82-mvvm-pho-bien-nhat-hien-nay"><span class="lv lv-y" title="Trung–cao">●</span> Q8.2 — MVVM (phổ biến nhất hiện nay)</h3>
+<div class="diag"><pre><span></span><code>┌────────┐  binding   ┌────────────┐        ┌────────┐
+│  View  │◄──────────►│  ViewModel │───────►│  Model │
+│ (VC/SwiftUI)         │ (logic +   │        │ (data) │
+└────────┘  (Combine/  │  state)    │        └────────┘
+            @Published) └────────────┘
+</code></pre></div>
+<ul>
+<li><strong>ViewModel</strong> giữ presentation logic + state, <strong>không</strong> import UIKit → <strong>test được</strong>.</li>
+<li>Binding qua Combine (<code>@Published</code>) hoặc SwiftUI (<code>@StateObject</code>).</li>
+<li>ViewModel thường <code>@MainActor</code> (vì đẩy state ra UI).</li>
+</ul>
+<p><strong>Trả lời phỏng vấn:</strong> "MVVM tách business/presentation logic khỏi view, giúp unit test ViewModel dễ dàng và view mỏng đi. Trade-off: có thể over-engineer cho màn hình đơn giản, và binding phức tạp nếu không có framework hỗ trợ."</p>
+<hr/>
+<h3 id="q83-mvp-vs-viper"><span class="lv lv-y" title="Trung–cao">●</span> Q8.3 — MVP vs VIPER</h3>
+<p><strong>MVP:</strong> View ↔ Presenter ↔ Model. Presenter cầm logic, View thụ động (protocol). Giống MVVM nhưng thường không có data binding tự động (gọi method tường minh).</p>
+<p><strong>VIPER:</strong> View · Interactor · Presenter · Entity · Router.</p>
+<div class="diag"><pre><span></span><code>View ◄─► Presenter ◄─► Interactor ◄─► Entity
+              │
+            Router (navigation)
+</code></pre></div>
+<ul>
+<li>Tách rất mịn, mỗi module 5 file → tốt cho <strong>team lớn, dự án dài hạn</strong>, nhiều màn hình chuẩn hoá.</li>
+<li>Trade-off: <strong>boilerplate nhiều</strong>, over-kill cho app nhỏ.</li>
+</ul>
+<hr/>
+<h3 id="q84-clean-architecture-cau-hoi-senior-tu"><span class="lv lv-r" title="Senior">●</span> Q8.4 — Clean Architecture (câu hỏi senior TỦ)</h3>
+<p><strong>Nguyên tắc:</strong> dependency chỉ hướng <strong>vào trong</strong>. Layer trong không biết layer ngoài. Business logic (Domain) độc lập với framework/UI/DB.</p>
+<div class="diag"><pre><span></span><code>┌─────────────────────────────────────────────┐
+│  Presentation (View + ViewModel/Presenter)   │  ← UIKit/SwiftUI
+│   ┌───────────────────────────────────────┐ │
+│   │  Domain (UseCase + Entity + Repo       │ │  ← PURE Swift, no import
+│   │   Protocol)  ← trái tim, không phụ thuộc│ │
+│   │   ┌─────────────────────────────────┐  │ │
+│   │   │  Data (Repository Impl,          │  │ │  ← URLSession, CoreData,
+│   │   │   API, DB, DTO mapping)          │  │ │     Firebase...
+│   │   └─────────────────────────────────┘  │ │
+│   └───────────────────────────────────────┘ │
+└─────────────────────────────────────────────┘
+   Dependency direction: ────────►  vào trong
+</code></pre></div>
+<p><strong>Luồng 1 request:</strong></p>
+<div class="diag"><pre><span></span><code>View → ViewModel → UseCase → Repository (protocol trong Domain)
+                                   ▲
+                                   │ implement bởi
+                              RepositoryImpl (Data layer) → API/DB
+</code></pre></div>
+<p><strong>Điểm mấu chốt:</strong> Domain định nghĩa <code>protocol Repository</code>. Data layer implement nó. → Domain <strong>không phụ thuộc</strong> vào chi tiết network/DB → đổi từ REST sang GraphQL, hay từ CoreData sang Realm → <strong>không đụng Domain</strong>. Dependency Inversion.</p>
+<p><strong>Sendable liên quan:</strong> khi các layer chạy trên actor khác nhau, DTO/Entity truyền qua boundary phải <code>Sendable</code>.</p>
+<p><strong>Trả lời phỏng vấn:</strong> "Clean Architecture đánh đổi boilerplate lấy testability và khả năng thay thế tầng hạ tầng. Domain layer là pure Swift nên test không cần mock UIKit/network. Với app nhỏ tôi sẽ dùng MVVM đơn giản; Clean phù hợp app lớn, nhiều dev, vòng đời dài, hoặc nhiều nguồn dữ liệu."</p>
+<hr/>
+<h3 id="q85-tca-the-composable-architecture"><span class="lv lv-r" title="Senior">●</span> Q8.5 — TCA (The Composable Architecture)</h3>
+<p>Kiến trúc unidirectional data flow (giống Redux) của Point-Free, phổ biến trong cộng đồng SwiftUI hiện đại.</p>
+<div class="diag"><pre><span></span><code>        ┌──────────── Action ────────────┐
+        │                                 │
+     ┌──▼───┐   Reducer(State, Action)  ┌─┴─────┐
+     │ View │◄──────── State ───────────│ Store │
+     └──────┘   (single source of truth)└───┬───┘
+                                            │ Effect (async)
+                                            ▼
+                                        Environment (deps)
+</code></pre></div>
+<p><strong>Thành phần:</strong>
+- <strong>State:</strong> value type, single source of truth.
+- <strong>Action:</strong> enum mọi sự kiện (user tap, response về...).
+- <strong>Reducer:</strong> <code>(inout State, Action) -&gt; Effect</code> — pure, mutate state, trả effect.
+- <strong>Store:</strong> giữ state, nhận action, chạy reducer.
+- <strong>Effect:</strong> side effect async (network...) → trả về Action mới.
+- <strong>Dependency:</strong> inject qua environment → <strong>test cực mạnh</strong> (thay dependency dễ).</p>
+<p><strong>Ưu:</strong> test-friendly tuyệt đối, state predictable, compose module tốt. <strong>Nhược:</strong> learning curve cao, boilerplate, phụ thuộc thư viện bên thứ 3, có overhead.</p>
+<p><strong>So sánh nhanh khi phỏng vấn:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Kiến trúc</th>
+<th>Testability</th>
+<th>Boilerplate</th>
+<th>Phù hợp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MVC</td>
+<td>Thấp</td>
+<td>Thấp</td>
+<td>Prototype, app rất nhỏ</td>
+</tr>
+<tr>
+<td>MVVM</td>
+<td>Trung–cao</td>
+<td>Trung</td>
+<td>Đa số app (mặc định an toàn)</td>
+</tr>
+<tr>
+<td>VIPER</td>
+<td>Cao</td>
+<td><strong>Rất cao</strong></td>
+<td>Team lớn, module chuẩn hoá</td>
+</tr>
+<tr>
+<td>Clean</td>
+<td>Cao</td>
+<td>Cao</td>
+<td>App lớn, nhiều nguồn data, dài hạn</td>
+</tr>
+<tr>
+<td>TCA</td>
+<td><strong>Rất cao</strong></td>
+<td>Cao</td>
+<td>SwiftUI thuần, team thích FP, cần state predictable</td>
+</tr>
+</tbody>
+</table>
+<hr/>
+<h3 id="q86-dependency-injection"><span class="lv lv-y" title="Trung–cao">●</span> Q8.6 — Dependency Injection</h3>
+<div class="hl"><pre><span></span><code><span class="c1">// Constructor injection (được ưa chuộng nhất — rõ ràng, test dễ)</span>
+<span class="kr">final</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">ProfileViewModel</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">let</span><span class="w"> </span><span class="nv">repo</span><span class="p">:</span><span class="w"> </span><span class="n">ProfileRepository</span>
+<span class="w">    </span><span class="kd">init</span><span class="p">(</span><span class="n">repo</span><span class="p">:</span><span class="w"> </span><span class="n">ProfileRepository</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kc">self</span><span class="p">.</span><span class="n">repo</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">repo</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Test: inject mock</span>
+<span class="kd">let</span><span class="w"> </span><span class="nv">vm</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ProfileViewModel</span><span class="p">(</span><span class="n">repo</span><span class="p">:</span><span class="w"> </span><span class="n">MockProfileRepository</span><span class="p">())</span>
+</code></pre></div>
+<p>Các kiểu: constructor (tốt nhất), property, method. Tránh singleton toàn cục (khó test, hidden dependency). DI container (Swinject/Factory) cho dự án lớn.</p>
+<hr/>
+<h2 id="9-testing">9. Testing</h2>
+<h3 id="q91-unit-test-test-double"><span class="lv lv-y" title="Trung–cao">●</span> Q9.1 — Unit test &amp; test double</h3>
+<div class="hl"><pre><span></span><code><span class="kd">protocol</span><span class="w"> </span><span class="nc">UserRepository</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kd">func</span><span class="w"> </span><span class="nf">fetch</span><span class="p">()</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kr">throws</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="p">}</span>
+
+<span class="kr">final</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">MockUserRepository</span><span class="p">:</span><span class="w"> </span><span class="n">UserRepository</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">var</span><span class="w"> </span><span class="nv">result</span><span class="p">:</span><span class="w"> </span><span class="n">Result</span><span class="p">&lt;</span><span class="n">User</span><span class="p">,</span><span class="w"> </span><span class="n">Error</span><span class="p">&gt;</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">.</span><span class="n">success</span><span class="p">(.</span><span class="n">stub</span><span class="p">)</span>
+<span class="w">    </span><span class="kd">func</span><span class="w"> </span><span class="nf">fetch</span><span class="p">()</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="kr">throws</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">try</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="kr">get</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span><span class="w"> </span><span class="nf">test_loadProfile_success</span><span class="p">()</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nv">vm</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="n">ProfileViewModel</span><span class="p">(</span><span class="n">repo</span><span class="p">:</span><span class="w"> </span><span class="n">MockUserRepository</span><span class="p">())</span>
+<span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="n">vm</span><span class="p">.</span><span class="n">load</span><span class="p">()</span>
+<span class="w">    </span><span class="n">XCTAssertEqual</span><span class="p">(</span><span class="n">vm</span><span class="p">.</span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">loaded</span><span class="p">(.</span><span class="n">stub</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></div>
+<ul>
+<li><strong>Test pyramid:</strong> nhiều unit → ít integration → rất ít UI test.</li>
+<li><strong>Test double:</strong> Dummy / Stub / Spy / Mock / Fake — biết phân biệt.</li>
+<li>Kiến trúc tách biệt (MVVM/Clean) là điều kiện để test dễ. → Đây là lý do <strong>thực dụng</strong> để chọn kiến trúc, hãy nói điều này khi phỏng vấn.</li>
+<li><strong>Swift Testing</strong> (mới, <code>@Test</code> macro) đang dần thay XCTest.</li>
+</ul>
+<hr/>
+<h2 id="10-system-design-cho-ios">10. System Design cho iOS</h2>
+<blockquote>
+<p>Câu hỏi dạng: <em>"Thiết kế feature chat / news feed / offline-first app"</em>. Cách trả lời: (1) hỏi làm rõ requirement, (2) vẽ high-level, (3) đi sâu 1-2 phần, (4) nói trade-off.</p>
+</blockquote>
+<h3 id="q101-vi-du-thiet-ke-offline-first-caching"><span class="lv lv-r" title="Senior">●</span> Q10.1 — Ví dụ: thiết kế offline-first / caching</h3>
+<div class="diag"><pre><span></span><code>        ┌──────────┐
+UI ◄────│ ViewModel│
+        └────┬─────┘
+             ▼
+       ┌───────────┐   cache hit    ┌────────────┐
+       │ Repository│───────────────►│ Local (CoreData/│
+       │           │◄───────────────│  Realm/SQLite)  │
+       └────┬──────┘   cache miss   └────────────┘
+            ▼
+      ┌──────────┐
+      │ Remote   │ (URLSession)
+      │ API      │
+      └──────────┘
+</code></pre></div>
+<p><strong>Chiến lược cache:</strong> cache-first (hiện local ngay, refresh nền) vs network-first. Invalidation qua TTL / ETag / push notification. Bàn về conflict resolution khi sync.</p>
+<h3 id="cau-hoi-system-design-hay-gap"><span class="lv lv-y" title="Trung–cao">●</span> Câu hỏi system design hay gặp:</h3>
+<ul>
+<li>Thiết kế <strong>image loading + caching</strong> (như SDWebImage): memory cache (NSCache) + disk cache + cancellation khi cell reuse.</li>
+<li>Thiết kế <strong>pagination</strong> cho feed (cursor vs offset, prefetch).</li>
+<li>Thiết kế <strong>real-time chat</strong> (WebSocket, message status enum, gửi ảnh qua HTTP + URL qua socket, offline queue).</li>
+<li><strong>Push notification</strong> để invalidate cache khi app bị kill.</li>
+<li>Modularization: tách feature thành Swift Package, giảm build time, ownership rõ.</li>
+</ul>
+<hr/>
+<h2 id="11-behavioral-soft-skills">11. Behavioral / Soft Skills</h2>
+<blockquote>
+<p>Với <strong>Senior/Lead</strong>, phần này quan trọng ngang kỹ thuật. Dùng cấu trúc <strong>STAR</strong> (Situation – Task – Action – Result).</p>
+</blockquote>
+<p><strong>Câu hỏi hay gặp &amp; hướng trả lời:</strong></p>
+<ul>
+<li>
+<p><strong>"Kể về một technical decision khó bạn từng đưa ra."</strong>
+  → Chọn ví dụ có trade-off thật (vd chọn kiến trúc, migrate GCD→Concurrency), nêu bạn cân nhắc gì, quyết định ra sao, kết quả đo được.</p>
+</li>
+<li>
+<p><strong>"Bạn xử lý bất đồng với đồng nghiệp/PM thế nào?"</strong>
+  → Nhấn: lắng nghe, dùng dữ liệu, disagree-and-commit, ưu tiên lợi ích sản phẩm/team.</p>
+</li>
+<li>
+<p><strong>"Bạn mentor junior thế nào?"</strong> (câu hỏi cho lead)
+  → Code review mang tính xây dựng, pair programming, giao task vừa sức có stretch, giải thích "why" không chỉ "what".</p>
+</li>
+<li>
+<p><strong>"Dự án thất bại / bug nghiêm trọng bạn gây ra?"</strong>
+  → Thành thật, nhận trách nhiệm, tập trung vào bài học và cách bạn ngăn tái diễn (thêm test, process, monitoring).</p>
+</li>
+<li>
+<p><strong>"Tại sao chuyển việc / gap trong CV?"</strong>
+  → Ngắn gọn, tích cực, hướng về mục tiêu phát triển.</p>
+</li>
+</ul>
+<p><strong>Câu chuyện cá nhân (adaptability):</strong> origin story Android → iOS là điểm mạnh — kể ngắn gọn để minh hoạ khả năng học nhanh &amp; thích nghi, gắn với "self-directed learning".</p>
+<p><strong>Câu hỏi ngược lại nên hỏi interviewer:</strong> quy trình review/CI, cách team quản lý tech debt, kiến trúc hiện tại, cơ hội mentor/lead.</p>
+<hr/>
+<h2 id="12-checklist-on-nhanh">12. Checklist ôn nhanh</h2>
+<p><strong>Ngày trước phỏng vấn — đọc lướt và tự trả lời miệng:</strong></p>
+<ul>
+<li>[ ] Value vs reference · COW · struct hay class khi nào</li>
+<li>[ ] ARC · retain cycle · weak vs unowned · delegate weak</li>
+<li>[ ] GCD vs Swift Concurrency · Task vs async let · actor · Sendable · MainActor</li>
+<li>[ ] Continuation bridge callback → async</li>
+<li>[ ] VC lifecycle · cell reuse · Diffable</li>
+<li>[ ] SwiftUI property wrappers · @StateObject vs @ObservedObject</li>
+<li>[ ] Combine: debounce/flatMap/receive(on) · store(in:) · retain cycle</li>
+<li>[ ] Keychain vs UserDefaults · SSL pinning · token refresh serialize</li>
+<li>[ ] MVC → MVVM → VIPER → Clean → TCA: trade-off từng cái</li>
+<li>[ ] Dependency Injection · vì sao kiến trúc tốt = test tốt</li>
+<li>[ ] 1 câu chuyện STAR cho technical decision · 1 cho conflict · 1 cho mentoring</li>
+<li>[ ] 3 câu hỏi ngược cho interviewer</li>
+</ul>
+<p><strong>Nguyên tắc trả lời senior:</strong>
+1. Không có "đáp án đúng tuyệt đối" cho kiến trúc — luôn nói <strong>trade-off</strong> và <strong>context</strong>.
+2. Nêu <strong>why</strong> trước <strong>how</strong>.
+3. Khi bí, nói to suy nghĩ (thinking out loud) — interviewer đánh giá cách tư duy hơn đáp án hoàn hảo.
+4. Dùng ví dụ <strong>thật</strong> từ dự án của bạn (S-Connect, Ganbaru, Daily Strong...) — cụ thể luôn thuyết phục hơn lý thuyết.</p>
+<hr/>
+<p><em>Chúc phỏng vấn thành công. Đọc hiểu &gt; học thuộc. Với mỗi mục, hãy tự đặt câu "nếu interviewer hỏi tiếp 1 tầng nữa thì sao?" — đó là cách phân biệt mid và senior.</em></p>
+  </main>
+</div>
+
+<div class="foot"><em>Đọc hiểu &gt; học thuộc.</em> · Tự hỏi "nếu interviewer đào sâu thêm 1 tầng thì sao?"</div>
+
+<script>
+// scroll-spy: highlight active section in sidebar
+const links = [...document.querySelectorAll('.nav-link')];
+const map = new Map();
+links.forEach(l => {
+  const id = l.getAttribute('href').slice(1);
+  const el = document.getElementById(id);
+  if (el) map.set(el, l);
+});
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const active = map.get(e.target);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-10% 0px -80% 0px', threshold: 0 });
+map.forEach((_, el) => obs.observe(el));
+
+// close mobile TOC after tapping a link
+links.forEach(l => l.addEventListener('click', () => {
+  if (window.innerWidth <= 900) {
+    const d = document.querySelector('aside details');
+    if (d) d.open = false;
+  }
+}));
+</script>
+</body>
+</html>
