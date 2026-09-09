@@ -1,0 +1,2090 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iOS Deep Dive Notes</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F6F8; --surface:#FFFFFF; --ink:#15171D; --ink-soft:#5A606C; --ink-faint:#8A909C;
+  --line:#E4E7EC; --accent:#F05138; --accent-deep:#C7371E;
+  --code-bg:#1B1E27;
+  --diag-bg:#EAF0F7; --diag-ink:#1D3A5F; --diag-line:#B8CBE0;
+  --g:#1F9D63; --y:#D98C1F; --r:#E14640;
+  --k:#F0883E; --str:#9ECBFF; --com:#7D8694; --num:#79C0FF; --fn:#D2A8FF; --typ:#7EE787;
+  --maxw:1200px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-size:16px; line-height:1.7; -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- HERO ---------- */
+.hero{
+  border-bottom:1px solid var(--line);
+  background:
+    radial-gradient(120% 140% at 88% -10%, rgba(240,81,56,.10), transparent 55%),
+    linear-gradient(180deg,#fff, #fbfcfd);
+}
+.hero-inner{max-width:var(--maxw); margin:0 auto; padding:64px 40px 52px;}
+.eyebrow{
+  font-family:'JetBrains Mono',monospace; font-size:.72rem; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--accent-deep); font-weight:700; margin:0 0 18px;
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+}
+.eyebrow::before{content:""; width:34px; height:2px; background:var(--accent); display:inline-block;}
+.lang-switch{margin-left:auto; color:var(--accent-deep); text-decoration:none; border:1px solid var(--line);
+  background:#fff; padding:5px 12px; border-radius:20px; letter-spacing:.05em; transition:all .15s ease;}
+.lang-switch:hover{background:var(--accent); border-color:var(--accent); color:#fff;}
+.hero h1{
+  font-family:'Space Grotesk',sans-serif; font-weight:700; letter-spacing:-.02em;
+  font-size:clamp(2.1rem,4.6vw,3.4rem); line-height:1.05; margin:0 0 20px; max-width:20ch;
+}
+.hero h1 .swift{color:var(--accent);}
+.hero p.lede{font-size:1.08rem; color:var(--ink-soft); max-width:62ch; margin:0 0 26px;}
+.legend{display:flex; gap:22px; flex-wrap:wrap; font-size:.85rem; color:var(--ink-soft);
+  font-family:'JetBrains Mono',monospace;}
+.legend span{display:inline-flex; align-items:center; gap:7px;}
+
+/* ---------- LAYOUT ---------- */
+.wrap{max-width:var(--maxw); margin:0 auto; padding:0 40px;
+  display:grid; grid-template-columns:250px 1fr; gap:48px; align-items:start;}
+
+/* ---------- SIDEBAR ---------- */
+aside{position:sticky; top:0; align-self:start; padding:36px 0;}
+aside summary{display:none;}
+.nav-title{font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--ink-faint); margin:0 0 14px; padding-left:12px;}
+.nav-link{display:flex; gap:11px; align-items:baseline; text-decoration:none; color:var(--ink-soft);
+  padding:7px 12px; border-left:2px solid transparent; border-radius:0 6px 6px 0;
+  font-size:.9rem; transition:all .15s ease; line-height:1.35;}
+.nav-link:hover{color:var(--ink); background:rgba(240,81,56,.05);}
+.nav-link.active{color:var(--ink); border-left-color:var(--accent); background:rgba(240,81,56,.07); font-weight:600;}
+.nav-num{font-family:'JetBrains Mono',monospace; font-size:.72rem; color:var(--accent);
+  font-weight:700; flex-shrink:0;}
+.nav-link.active .nav-num{color:var(--accent-deep);}
+
+/* ---------- CONTENT ---------- */
+main{padding:36px 0 100px; min-width:0;}
+h2{
+  font-family:'Space Grotesk',sans-serif; font-weight:700; letter-spacing:-.015em;
+  font-size:1.75rem; line-height:1.15; margin:64px 0 8px; padding-top:14px;
+  scroll-margin-top:24px; position:relative;
+}
+h2:first-of-type{margin-top:8px;}
+h2::after{content:""; display:block; width:52px; height:3px; background:var(--accent);
+  border-radius:2px; margin-top:14px;}
+h3{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:1.15rem;
+  margin:38px 0 10px; line-height:1.3; scroll-margin-top:24px;
+  display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;}
+h4{font-weight:600; font-size:1rem; margin:24px 0 6px; color:var(--ink);}
+p{margin:12px 0;}
+a{color:var(--accent-deep);}
+strong{font-weight:600; color:var(--ink);}
+ul,ol{padding-left:22px; margin:12px 0;}
+li{margin:6px 0;}
+li::marker{color:var(--accent);}
+
+.lv{font-size:.62rem; line-height:1; transform:translateY(-1px);}
+.lv-g{color:var(--g);} .lv-y{color:var(--y);} .lv-r{color:var(--r);}
+
+blockquote{margin:16px 0; padding:14px 20px; background:#fff; border:1px solid var(--line);
+  border-left:3px solid var(--accent); border-radius:0 10px 10px 0; color:var(--ink-soft);
+  font-size:.96rem;}
+blockquote p{margin:6px 0;}
+
+/* ---------- TABLES ---------- */
+.tw{overflow-x:auto; margin:20px 0;}
+table{border-collapse:collapse; width:100%; font-size:.92rem;
+  background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+th,td{text-align:left; padding:11px 15px; border-bottom:1px solid var(--line); vertical-align:top;}
+thead th{background:linear-gradient(180deg,#fbf1ee,#f7ece8);
+  font-family:'Space Grotesk',sans-serif; font-weight:600; color:var(--accent-deep);
+  font-size:.82rem; border-bottom:2px solid rgba(240,81,56,.25); white-space:nowrap;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#fafafb;}
+td code, th code, li code, p code{
+  font-family:'JetBrains Mono',monospace; font-size:.85em; background:#EEF0F3;
+  color:var(--accent-deep); padding:2px 6px; border-radius:5px; border:1px solid #E2E5EA;
+}
+
+/* ---------- CODE ---------- */
+.hl{
+  background:var(--code-bg); border-radius:12px; margin:18px 0; overflow:hidden;
+  border:1px solid #10131a; box-shadow:0 10px 30px -14px rgba(20,23,29,.45); position:relative;
+}
+.hl::before{
+  content:"● ● ●"; display:block; letter-spacing:4px; font-size:.6rem; color:#4a505e;
+  padding:9px 16px 0; font-family:'JetBrains Mono',monospace;
+}
+.hl pre{margin:0; padding:14px 18px 18px; overflow-x:auto;}
+.hl code,.hl pre{font-family:'JetBrains Mono',monospace; font-size:.85rem; line-height:1.6;
+  color:#E6EDF3; background:none;}
+.hl .c{color:var(--com); font-style:italic;}
+.hl .k{color:var(--k); font-weight:500;}
+.hl .t{color:var(--typ);}
+.hl .s{color:var(--str);}
+.hl .f{color:var(--fn);}
+.hl .bad{color:#FF7B72; font-style:italic;}
+.hl .good{color:#7EE787; font-style:italic;}
+
+/* ---------- DIAGRAM ---------- */
+.diag{
+  background:var(--diag-bg);
+  background-image:linear-gradient(var(--diag-line) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--diag-line) 1px,transparent 1px);
+  background-size:22px 22px; background-position:-1px -1px;
+  border:1px solid var(--diag-line); border-radius:12px; margin:18px 0; overflow:hidden;
+}
+.diag pre{margin:0; padding:18px 20px; overflow-x:auto;}
+.diag code, .diag pre{font-family:'JetBrains Mono',monospace; font-size:.8rem; line-height:1.5;
+  color:var(--diag-ink); background:none; white-space:pre; font-weight:500;}
+
+/* ---------- COLLAPSIBLE CARD ---------- */
+.qa{background:var(--surface); border:1px solid var(--line); border-radius:14px;
+  margin:14px 0; overflow:hidden; transition:border-color .15s ease, box-shadow .15s ease;}
+.qa[open]{border-color:rgba(240,81,56,.35); box-shadow:0 1px 3px rgba(21,23,29,.05);}
+.qa > summary{list-style:none; cursor:pointer; padding:16px 20px 16px 46px; position:relative;
+  display:block; user-select:none;}
+.qa > summary::-webkit-details-marker{display:none;}
+.qa > summary::before{
+  content:""; position:absolute; left:20px; top:23px; width:9px; height:9px;
+  border-right:2px solid var(--accent); border-bottom:2px solid var(--accent);
+  transform:rotate(-45deg); transition:transform .18s ease; border-radius:1px;
+}
+.qa[open] > summary::before{transform:rotate(45deg); top:21px;}
+.qa > summary:hover{background:rgba(240,81,56,.04);}
+.qa > summary h3{margin:0; padding:0; display:block;}
+.qa-body{padding:2px 20px 20px 46px; border-top:1px solid var(--line); margin-top:14px;}
+.qa-body > *:first-child{margin-top:16px;}
+
+/* ---------- "SAY IT" BLOCK ---------- */
+.say{margin:24px 0 4px; padding:15px 18px 13px; border-radius:12px;
+  background:#fff; border:1px solid var(--line); border-left:3px solid var(--g);}
+.say-title{font-family:'JetBrains Mono',monospace; font-size:.68rem; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--g); font-weight:700; margin:0 0 8px;
+  display:flex; align-items:center; gap:9px;}
+.say-title::before{content:""; width:20px; height:2px; background:var(--g);}
+.say p{margin:9px 0; color:var(--ink-soft); font-size:.96rem;}
+.say p:last-child{margin-bottom:0;}
+.say strong{color:var(--ink);}
+
+/* ---------- KEY TAKEAWAY ---------- */
+.key{margin:22px 0 4px; padding:14px 18px; border-radius:12px;
+  background:linear-gradient(180deg,#fbf1ee,#fdf8f7);
+  border:1px solid rgba(240,81,56,.22);}
+.key-title{font-family:'JetBrains Mono',monospace; font-size:.68rem; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--accent-deep); font-weight:700; margin:0 0 8px;
+  display:flex; align-items:center; gap:9px;}
+.key-title::before{content:""; width:20px; height:2px; background:var(--accent);}
+.key p{margin:7px 0; font-size:.96rem;}
+.key ul{margin:8px 0;}
+
+/* ---------- TOOLS ---------- */
+.qa-tools{display:flex; gap:8px; margin:18px 0 4px; flex-wrap:wrap;}
+.qa-tools button{
+  font-family:'JetBrains Mono',monospace; font-size:.72rem; letter-spacing:.06em;
+  text-transform:uppercase; font-weight:700; color:var(--accent-deep);
+  background:#fff; border:1px solid var(--line); border-radius:20px;
+  padding:7px 14px; cursor:pointer; transition:all .15s ease;
+}
+.qa-tools button:hover{background:var(--accent); border-color:var(--accent); color:#fff;}
+.qa:target, .qa.flash{border-color:var(--accent);}
+
+.foot{max-width:var(--maxw); margin:0 auto; padding:0 40px 70px; color:var(--ink-faint);
+  font-size:.85rem; font-family:'JetBrains Mono',monospace; text-align:center;}
+.foot em{color:var(--ink-soft); font-style:normal;}
+.foot a{color:var(--accent-deep); text-decoration:none;}
+.foot a:hover{text-decoration:underline;}
+
+@media (max-width: 900px){
+  .hero-inner{padding:44px 22px 36px;}
+  .wrap{grid-template-columns:1fr; gap:0; padding:0 22px;}
+  aside{position:static; padding:18px 0 0;}
+  aside details{background:#fff; border:1px solid var(--line); border-radius:12px; padding:6px 10px;}
+  aside summary{display:flex; align-items:center; justify-content:space-between;
+    cursor:pointer; font-family:'Space Grotesk',sans-serif; font-weight:600; padding:8px;
+    list-style:none;}
+  aside summary::-webkit-details-marker{display:none;}
+  aside summary::after{content:"▾"; color:var(--accent); font-size:1rem;}
+  .nav-title{display:none;}
+  main{padding:24px 0 70px;}
+  h2{font-size:1.5rem; margin-top:46px;}
+  .qa > summary{padding:14px 16px 14px 40px;}
+  .qa > summary::before{left:16px;}
+  .qa-body{padding:2px 16px 18px 16px;}
+  .foot{padding:0 22px 50px;}
+}
+@media (min-width: 901px){
+  aside details > summary{display:none;}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">Session Notes · Concurrency · SOLID · Architecture
+      <a href="ios-prep.html" class="lang-switch">← Master doc</a></p>
+    <h1>iOS <span class="swift">Deep Dive</span> Notes</h1>
+    <p class="lede">Ghi chú từ một buổi đào sâu: GCD queue, Swift Concurrency, continuation, lan truyền lỗi, SOLID áp vào code thật, và cách phân tầng MVVM → Repository → Use Case. Mỗi mục có phần <strong>nói thế nào trong interview</strong>.</p>
+    <div class="legend">
+      <span><span class="lv lv-g">●</span> Nền tảng</span>
+      <span><span class="lv lv-y">●</span> Trung–cao</span>
+      <span><span class="lv lv-r">●</span> Senior / Lead</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <aside>
+    <details open>
+      <summary>Mục lục</summary>
+      <p class="nav-title">Nội dung</p>
+      <nav id="toc">
+        <a class="nav-link" href="#s1"><span class="nav-num">01</span><span class="nav-txt">Serial vs Concurrent Queue</span></a>
+        <a class="nav-link" href="#s2"><span class="nav-num">02</span><span class="nav-txt">Task, TaskGroup &amp; async let</span></a>
+        <a class="nav-link" href="#s3"><span class="nav-num">03</span><span class="nav-txt">Continuation</span></a>
+        <a class="nav-link" href="#s4"><span class="nav-num">04</span><span class="nav-txt">Lan truyền lỗi tới ViewModel</span></a>
+        <a class="nav-link" href="#s5"><span class="nav-num">05</span><span class="nav-txt">Session expire &amp; Observer</span></a>
+        <a class="nav-link" href="#s6"><span class="nav-num">06</span><span class="nav-txt">Singleton</span></a>
+        <a class="nav-link" href="#s7"><span class="nav-num">07</span><span class="nav-txt">SOLID trong code thật</span></a>
+        <a class="nav-link" href="#s8"><span class="nav-num">08</span><span class="nav-txt">Chọn kiến trúc</span></a>
+        <a class="nav-link" href="#s9"><span class="nav-num">09</span><span class="nav-txt">MVVM + Repository</span></a>
+        <a class="nav-link" href="#s10"><span class="nav-num">10</span><span class="nav-txt">Repository chia thế nào</span></a>
+        <a class="nav-link" href="#s11"><span class="nav-num">11</span><span class="nav-txt">Use Case</span></a>
+        <a class="nav-link" href="#s12"><span class="nav-num">12</span><span class="nav-txt">Logic kỹ thuật ở tầng nào</span></a>
+      </nav>
+    </details>
+  </aside>
+  <main id="content">
+
+<blockquote>
+<p>Ghi chú theo mạch hỏi–đáp của một buổi học, không phải tài liệu tra cứu. Đọc từ trên xuống sẽ thấy các phần nối vào nhau: concurrency → xử lý lỗi → phân tầng → nguyên tắc thiết kế.</p>
+<p><strong>Nguyên tắc xuyên suốt:</strong> mọi thứ ở đây đều để trả lời một câu hỏi duy nhất — <em>khi code này cần sửa sau sáu tháng, ai sẽ phải sửa bao nhiêu file?</em></p>
+</blockquote>
+
+<!-- ══════════════════ 01 ══════════════════ -->
+<h2 id="s1">1. Serial vs Concurrent Queue</h2>
+<div class="qa-tools"><button type="button" data-act="open">Mở tất cả</button><button type="button" data-act="close">Thu gọn tất cả</button></div>
+
+<details class="qa">
+<summary><h3><span class="lv lv-g" title="Nền tảng">●</span> Serial queue và concurrent queue khác nhau ở đâu?</h3></summary>
+<div class="qa-body">
+<p><strong>Cốt lõi:</strong> cả hai đều là <code>DispatchQueue</code>, khác ở <strong>số task chạy cùng lúc</strong>.</p>
+
+<div class="hl"><pre><code><span class="c">// SERIAL — 1 task tại một thời điểm, đúng thứ tự FIFO</span>
+let serial = DispatchQueue(label: "com.app.serial")   <span class="c">// default = serial</span>
+serial.async { print("1") }
+serial.async { print("2") }
+serial.async { print("3") }
+<span class="c">// Luôn in: 1, 2, 3</span>
+
+<span class="c">// CONCURRENT — nhiều task song song trên nhiều thread</span>
+let concurrent = DispatchQueue(label: "com.app.concurrent", attributes: .concurrent)
+concurrent.async { print("1") }
+concurrent.async { print("2") }
+concurrent.async { print("3") }
+<span class="c">// Thứ tự in: không xác định</span>
+</code></pre></div>
+
+<div class="tw"><table>
+<thead><tr><th></th><th>Serial</th><th>Concurrent</th></tr></thead>
+<tbody>
+<tr><td>Task chạy đồng thời</td><td>1</td><td>Nhiều</td></tr>
+<tr><td>Thread sử dụng</td><td>1</td><td>Nhiều (system quản lý)</td></tr>
+<tr><td>Thứ tự hoàn thành</td><td>Đảm bảo</td><td>Không đảm bảo</td></tr>
+<tr><td>Race condition</td><td>Không</td><td>Có thể</td></tr>
+<tr><td>Ví dụ có sẵn</td><td><code>DispatchQueue.main</code></td><td><code>DispatchQueue.global(qos:)</code></td></tr>
+</tbody>
+</table></div>
+
+<h4>Bẫy hay hỏi</h4>
+<p><strong>1. <code>sync</code>/<code>async</code> là trục khác.</strong> <code>sync</code>/<code>async</code> nói về <em>caller có bị block không</em>; serial/concurrent nói về <em>queue chạy bao nhiêu task cùng lúc</em>. Hai trục độc lập.</p>
+
+<p><strong>2. Deadlock kinh điển:</strong></p>
+<div class="hl"><pre><code><span class="c">// Đang ở main thread:</span>
+DispatchQueue.main.sync { }   <span class="bad">// 💥 Deadlock</span>
+</code></pre></div>
+<p>Main là serial queue đang chạy task hiện tại; <code>sync</code> đợi task mới xong → khóa chết. Tương tự khi <code>sync</code> vào chính serial queue đang chạy.</p>
+
+<p><strong>3. Thread explosion.</strong> Đẩy hàng trăm task blocking vào concurrent queue → GCD tạo quá nhiều thread. Giải pháp: <code>DispatchSemaphore</code> giới hạn, <code>OperationQueue.maxConcurrentOperationCount</code>, hoặc Swift Concurrency (cooperative pool giới hạn theo số core).</p>
+
+<p><strong>4. Readers–writer pattern</strong> — ứng dụng đẹp nhất của concurrent queue:</p>
+<div class="hl"><pre><code>final class Cache {
+    private var store: [String: Data] = [:]
+    private let queue = DispatchQueue(label: "cache", attributes: .concurrent)
+
+    func value(for key: String) -> Data? {
+        queue.sync { store[key] }                      <span class="good">// đọc song song</span>
+    }
+    func set(_ data: Data, for key: String) {
+        queue.async(flags: .barrier) { self.store[key] = data }  <span class="good">// ghi độc quyền</span>
+    }
+}
+</code></pre></div>
+<p><code>.barrier</code> khiến task ghi đợi mọi task đọc xong, và block task mới cho tới khi ghi hoàn tất.</p>
+
+<div class="key">
+<p class="key-title">Tương đương trong Swift Concurrency</p>
+<p><code>actor</code> ≈ serial queue (tuần tự hóa truy cập state) · <code>TaskGroup</code> ≈ concurrent queue (fan-out song song, có structured cancellation).</p>
+</div>
+</div>
+</details>
+
+<!-- ══════════════════ 02 ══════════════════ -->
+<h2 id="s2">2. Task, TaskGroup &amp; async let</h2>
+<div class="qa-tools"><button type="button" data-act="open">Mở tất cả</button><button type="button" data-act="close">Thu gọn tất cả</button></div>
+
+<details class="qa">
+<summary><h3><span class="lv lv-y" title="Trung–cao">●</span> <code>Task { }</code> và <code>TaskGroup</code> khác nhau như thế nào?</h3></summary>
+<div class="qa-body">
+<p><strong>Lưu ý syntax:</strong> không có <code>TaskGroup { }</code>. <code>TaskGroup</code> là struct bạn chỉ nhận được bên trong closure của <code>withTaskGroup</code> / <code>withThrowingTaskGroup</code>.</p>
+
+<p><strong>Khác biệt cốt lõi:</strong> <code>Task { }</code> là <strong>unstructured</strong> concurrency, task group là <strong>structured</strong>.</p>
+
+<h4>Ví dụ đời thường</h4>
+<p><code>Task { }</code> — nhờ một bạn đi mua cà phê rồi quay lại làm việc ngay, không đứng chờ. Muốn bảo bạn ấy dừng thì phải tự nhớ số điện thoại mà gọi lại.</p>
+<p><code>TaskGroup</code> — bạn là trưởng nhóm, chia 10 tấm ảnh cho 10 người rồi <strong>đứng chờ đủ 10 người quay lại</strong>. Vì đang đứng chờ nên bạn kiểm soát được cả nhóm: bạn hủy thì cả 10 dừng, một người lỗi thì 9 người kia dừng luôn.</p>
+
+<div class="hl"><pre><code><span class="c">// ── Task: không chờ ──</span>
+let task = Task { try await fetchUser() }
+<span class="c">// code ở đây chạy NGAY</span>
+let user = try await task.value      <span class="c">// đợi khi nào bạn muốn</span>
+
+<span class="c">// ── TaskGroup: bắt buộc chờ ──</span>
+let total = await withTaskGroup(of: Int.self) { group in
+    for url in urls { group.addTask { await download(url) } }
+    var sum = 0
+    for await size in group { sum += size }
+    return sum
+}
+<span class="c">// tới đây: MỌI child task chắc chắn đã xong</span>
+</code></pre></div>
+
+<div class="tw"><table>
+<thead><tr><th></th><th><code>Task { }</code></th><th><code>TaskGroup</code></th></tr></thead>
+<tbody>
+<tr><td>Structured</td><td>Không</td><td>Có</td></tr>
+<tr><td>Đợi hoàn thành</td><td>Tùy bạn (<code>await task.value</code>)</td><td>Bắt buộc ở cuối scope</td></tr>
+<tr><td>Cancel lan xuống child</td><td>Không</td><td>Có</td></tr>
+<tr><td>Child lỗi → cancel phần còn lại</td><td>Không</td><td>Có (throwing group)</td></tr>
+<tr><td>Số task</td><td>1</td><td>N, động</td></tr>
+<tr><td>Kế thừa cancellation của cha</td><td>Không</td><td>Có</td></tr>
+</tbody>
+</table></div>
+
+<h4>Dùng gì khi nào</h4>
+<p><strong><code>Task { }</code></strong> — bắc cầu từ sync sang async, hoặc fire-and-forget:</p>
+<div class="hl"><pre><code>Button("Load") {
+    Task { await viewModel.load() }      <span class="c">// từ sync context vào async</span>
+}
+
+<span class="c">// UIKit — phải tự dọn</span>
+loadTask = Task { await refresh() }
+deinit { loadTask?.cancel() }
+</code></pre></div>
+
+<p><strong><code>TaskGroup</code></strong> — N việc song song cùng loại, cần tất cả kết quả:</p>
+<div class="hl"><pre><code>func loadThumbnails(_ ids: [String]) async throws -> [String: UIImage] {
+    try await withThrowingTaskGroup(of: (String, UIImage).self) { group in
+        for id in ids {
+            group.addTask { (id, try await fetchThumbnail(id)) }
+        }
+        return try await group.reduce(into: [:]) { $0[$1.0] = $1.1 }
+    }
+}
+</code></pre></div>
+
+<h4>Điểm hay bị hỏi thêm</h4>
+<p><strong><code>async let</code></strong> — cũng structured, nhưng cho <strong>số task cố định biết trước</strong>. Dùng <code>async let</code> khi có 2–3 việc <em>khác kiểu</em>; dùng <code>TaskGroup</code> khi N việc <em>cùng kiểu</em>, số lượng động.</p>
+<div class="hl"><pre><code>async let user = fetchUser()
+async let posts = fetchPosts()
+let profile = Profile(user: try await user, posts: try await posts)
+</code></pre></div>
+
+<p><strong><code>Task { }</code> vs <code>Task.detached { }</code>:</strong> <code>Task { }</code> kế thừa actor isolation, priority, task-locals; <code>detached</code> không kế thừa gì. <code>detached</code> gần như luôn là sai lựa chọn.</p>
+
+<p><strong>Giới hạn song song trong TaskGroup</strong> — group không tự throttle, thêm 10.000 task là 10.000 task:</p>
+<div class="hl"><pre><code>await withTaskGroup(of: Void.self) { group in
+    var iterator = urls.makeIterator()
+    for _ in 0..&lt;5 {                                <span class="c">// mồi 5 task đầu</span>
+        guard let url = iterator.next() else { break }
+        group.addTask { await process(url) }
+    }
+    while await group.next() != nil {               <span class="c">// mỗi task xong nạp thêm 1</span>
+        guard let url = iterator.next() else { continue }
+        group.addTask { await process(url) }
+    }
+}
+</code></pre></div>
+
+<p><strong>Cancellation là cooperative.</strong> Cả hai loại chỉ <em>đánh dấu</em> cancelled; code phải tự kiểm tra <code>try Task.checkCancellation()</code> hoặc <code>Task.isCancelled</code>, nếu không task vẫn chạy tới hết.</p>
+
+<div class="say">
+<p class="say-title">Nói trong interview</p>
+<p>"<code>Task</code> là để chạy một việc bất đồng bộ mà không cần chờ — em hay dùng khi cần gọi code async từ chỗ không phải async, ví dụ khi người dùng bấm nút trong SwiftUI.</p>
+<p><code>TaskGroup</code> là khi có nhiều việc cùng loại muốn chạy song song và cần đợi hết mới đi tiếp — ví dụ tải 20 ảnh thumbnail rồi mới hiển thị. Nó chờ tự động, và nếu một việc lỗi thì các việc còn lại được dừng luôn, không chạy vô ích.</p>
+<p>Nói ngắn gọn: <strong><code>Task</code> là việc lẻ và tự do; <code>TaskGroup</code> là nhóm việc có người quản lý.</strong>"</p>
+</div>
+</div>
+</details>
+
+<!-- ══════════════════ 03 ══════════════════ -->
+<h2 id="s3">3. Continuation — bắc cầu callback sang async</h2>
+<div class="qa-tools"><button type="button" data-act="open">Mở tất cả</button><button type="button" data-act="close">Thu gọn tất cả</button></div>
+
+<details class="qa">
+<summary><h3><span class="lv lv-y" title="Trung–cao">●</span> Continuation là gì và giải quyết vấn đề gì?</h3></summary>
+<div class="qa-body">
+<p><strong>Vấn đề:</strong> code cũ dùng callback, không biết <code>await</code> là gì. Continuation là công cụ <strong>bọc hàm cũ thành hàm async</strong>.</p>
+
+<p><strong>Ví dụ đời thường:</strong> gọi điện đặt bánh, cửa hàng nói "chờ chút, xong tôi gọi lại" rồi <em>cúp máy</em> — đó là callback. Continuation là khi bạn nói "tôi cứ giữ máy, xong anh nói vào máy là được": bạn <strong>tạm dừng</strong> ở đó, và "tờ giấy hẹn" để cửa hàng gọi lại chính là continuation.</p>
+
+<div class="hl"><pre><code><span class="c">// Hàm cũ, dùng callback</span>
+func layUserCu(id: String, completion: @escaping (User) -> Void) { ... }
+
+<span class="c">// Bọc lại thành async</span>
+func layUser(id: String) async -> User {
+    await withCheckedContinuation { continuation in
+        layUserCu(id: id) { user in
+            continuation.resume(returning: user)     <span class="c">// "xong rồi, đây là kết quả"</span>
+        }
+    }
+}
+</code></pre></div>
+
+<h4>Hai luật tuyệt đối</h4>
+<p><strong>Phải gọi <code>resume</code> — đúng một lần.</strong></p>
+<ul>
+<li><strong>Không gọi</strong> → hàm treo mãi mãi, <code>await</code> không bao giờ trả về. Người dùng thấy loading xoay vô tận.</li>
+<li><strong>Gọi 2 lần</strong> → app <strong>crash</strong>.</li>
+</ul>
+<div class="hl"><pre><code><span class="bad">// ❌ SAI — nếu error != nil thì không ai gọi resume</span>
+layUserCu(id: id) { user, error in
+    if let user = user {
+        continuation.resume(returning: user)
+    }
+    <span class="c">// quên trường hợp lỗi → treo vĩnh viễn</span>
+}
+</code></pre></div>
+
+<p><strong><code>checked</code> vs <code>unsafe</code>:</strong> <code>withCheckedContinuation</code> tự kiểm tra hai lỗi trên và báo cho bạn. <code>withUnsafeContinuation</code> không kiểm tra — nhanh hơn vài chục nanosecond, nhưng sai thì rất khó tìm. Luôn dùng <code>checked</code>.</p>
+
+<div class="key">
+<p class="key-title">Lưu ý để không nhầm</p>
+<p>Continuation <strong>không thuộc riêng về <code>Task</code></strong> — nó là hàm độc lập (<code>withCheckedContinuation</code>), dùng ở bất cứ đâu trong code async.</p>
+<p>Nếu callback được gọi <strong>nhiều lần</strong> (ví dụ vị trí cập nhật liên tục), continuation là <strong>sai công cụ</strong> vì nó chỉ resume được một lần. Trường hợp đó dùng <code>AsyncStream</code>.</p>
+</div>
+</div>
+</details>
+
+<details class="qa">
+<summary><h3><span class="lv lv-y" title="Trung–cao">●</span> <code>withCheckedThrowingContinuation</code> — tại sao phải dùng, không dùng có được không?</h3></summary>
+<div class="qa-body">
+<p>Bốn biến thể, khác nhau ở <strong>2 trục</strong>:</p>
+<div class="tw"><table>
+<thead><tr><th></th><th>Không lỗi</th><th>Có thể lỗi</th></tr></thead>
+<tbody>
+<tr><td>Có kiểm tra</td><td><code>withCheckedContinuation</code></td><td><code>withCheckedThrowingContinuation</code></td></tr>
+<tr><td>Không kiểm tra</td><td><code>withUnsafeContinuation</code></td><td><code>withUnsafeThrowingContinuation</code></td></tr>
+</tbody>
+</table></div>
+
+<p>Khác biệt duy nhất của bản throwing: nó cho phép gọi <code>resume(throwing:)</code>.</p>
+
+<div class="hl"><pre><code>func taiDuLieu() async throws -> Data {
+    try await withCheckedThrowingContinuation { c in
+        taiDuLieuCu { data, error in
+            if let error { c.resume(throwing: error) }
+            else if let data { c.resume(returning: data) }
+            else { c.resume(throwing: MyError.unknown) }
+        }
+    }
+}
+</code></pre></div>
+
+<h4>Không dùng thì sao? Ba đường, cả ba tệ hơn</h4>
+<ul>
+<li><strong>Trả optional, ném lỗi đi.</strong> Người dùng thấy <code>nil</code> nhưng bạn không biết vì sao — mất mạng? sai token? server sập? Không hiện được thông báo tử tế, không debug được.</li>
+<li><strong>Trả <code>Result</code>.</strong> Giữ được lỗi, nhưng mọi nơi gọi phải tự <code>switch</code>, lỗi không tự lan lên hàm cha, không dùng được <code>do/catch</code> chung.</li>
+<li><strong>Crash khi lỗi</strong> (<code>data!</code>). App chết vì mất wifi.</li>
+</ul>
+
+<p><strong>Lý do thật:</strong> nhiều lời gọi dùng chung một chỗ bắt lỗi.</p>
+<div class="hl"><pre><code>do {
+    let user = try await layUser()
+    let anh  = try await taiAnh(user.avatarURL)
+    let ban  = try await layDanhSachBan(user.id)
+    hienThi(user, anh, ban)
+} catch {
+    hienThiLoi(error)     <span class="good">// một chỗ xử lý cho cả ba</span>
+}
+</code></pre></div>
+<p>Với <code>Result</code> bạn phải <code>switch</code> ba lần lồng nhau.</p>
+
+<div class="key">
+<p class="key-title">Cách nhớ tên hàm</p>
+<p>Đọc thành ba phần, mỗi phần một câu hỏi: <strong><code>Checked</code></strong> → "muốn Swift kiểm tra hộ không?" → Có · <strong><code>Throwing</code></strong> → "việc này có thể thất bại không?" → Nếu có thì chọn bản này · <strong><code>Continuation</code></strong> → "tờ giấy hẹn để gọi lại".</p>
+<p>Thực tế ~90% trường hợp bạn dùng đúng một cái: <code>withCheckedThrowingContinuation</code>.</p>
+</div>
+</div>
+</details>
+
+<!-- ══════════════════ 04 ══════════════════ -->
+<h2 id="s4">4. Lan truyền lỗi tới ViewModel</h2>
+<div class="qa-tools"><button type="button" data-act="open">Mở tất cả</button><button type="button" data-act="close">Thu gọn tất cả</button></div>
+
+<details class="qa">
+<summary><h3><span class="lv lv-y" title="Trung–cao">●</span> Có <code>async throws</code> thì ViewModel chỉ cần <code>try/catch</code> là biết lỗi cụ thể?</h3></summary>
+<div class="qa-body">
+<p>Phần <strong>tự lan lên</strong> thì đúng hoàn toàn — các tầng giữa chỉ cần <code>try</code>:</p>
+<div class="hl"><pre><code><span class="c">// Tầng network</span>
+func taiUser() async throws -> User {
+    try await withCheckedThrowingContinuation { ... }
+}
+
+<span class="c">// Tầng repository — chỉ try, không catch</span>
+func layUser() async throws -> User {
+    let user = try await api.taiUser()
+    luuCache(user)
+    return user
+}
+
+<span class="c">// ViewModel — bắt ở đây</span>
+func load() async {
+    do { self.user = try await repo.layUser() }
+    catch { self.loi = error }       <span class="good">// lỗi từ tầng sâu nhất đi thẳng tới đây</span>
+}
+</code></pre></div>
+<p>Ba tầng, một chỗ <code>catch</code>. Đó là giá trị lớn nhất.</p>
+
+<h4>Chỗ dễ hiểu sai</h4>
+<p>Trong <code>catch { }</code>, biến <code>error</code> có kiểu chung là <code>Error</code>. Bạn <em>có</em> đúng object lỗi, nhưng Swift chưa biết nó là loại gì — phải hỏi lại:</p>
+<div class="hl"><pre><code>catch let error as APIError {
+    switch error {
+    case .unauthorized:      dangXuat()
+    case .notFound:          hienThi("Không tìm thấy")
+    case .server(let code):  hienThi("Lỗi server \(code)")
+    }
+} catch let error as URLError where error.code == .notConnectedToInternet {
+    hienThi("Vui lòng kiểm tra kết nối mạng")
+} catch {
+    hienThi("Có lỗi xảy ra")       <span class="c">// bắt phần còn lại</span>
+}
+</code></pre></div>
+<p>Nên câu trả lời chính xác: <strong><code>try/catch</code> giúp lỗi tới được ViewModel nguyên vẹn; muốn biết cụ thể thì cần kiểm tra kiểu của nó.</strong></p>
+
+<h4>Cái bẫy thật sự: lỗi bị "bóp" giữa đường</h4>
+<div class="hl"><pre><code><span class="bad">// ❌ Chặn lỗi, đổi thành nil</span>
+func layUser() async -> User? {
+    do { return try await api.taiUser() }
+    catch { return nil }              <span class="c">// ViewModel chỉ thấy nil, không biết vì sao</span>
+}
+
+<span class="bad">// ❌ Bọc lại thành lỗi chung chung</span>
+catch { throw AppError.somethingWrong }   <span class="c">// mất hết chi tiết gốc</span>
+
+<span class="good">// ✅ Đổi loại lỗi nhưng giữ lỗi gốc</span>
+enum AppError: Error {
+    case network(underlying: Error)
+    case unauthorized
+}
+catch let error as URLError { throw AppError.network(underlying: error) }
+</code></pre></div>
+
+<div class="say">
+<p class="say-title">Nói trong interview</p>
+<p>"<code>async throws</code> giúp lỗi tự lan từ tầng network lên ViewModel mà các tầng giữa chỉ cần <code>try</code>, không phải viết <code>catch</code> lặp lại.</p>
+<p>Nhưng trong <code>catch</code> thì <code>error</code> có kiểu chung là <code>Error</code>, nên nếu muốn xử lý riêng từng loại — 401 thì đăng xuất, mất mạng thì hiện nút thử lại — em phải <code>catch let error as APIError</code> rồi switch trên đó.</p>
+<p>Điều em chú ý là <strong>không bắt lỗi ở tầng giữa rồi trả về <code>nil</code></strong>, vì như vậy ViewModel mất hết thông tin. Nếu cần đổi loại lỗi thì em bọc kèm lỗi gốc bên trong."</p>
+</div>
+
+<div class="key">
+<p class="key-title">Điểm cộng nếu người phỏng vấn đi sâu</p>
+<p>Từ Swift 6 có <strong>typed throws</strong> — viết <code>async throws(APIError)</code> thì trong <code>catch</code> compiler biết luôn kiểu, không cần cast. Nhưng nó chỉ hợp cho hàm tầng thấp có tập lỗi rõ ràng; lên tầng cao thì lỗi từ nhiều nguồn nên <code>Error</code> chung vẫn tiện hơn.</p>
+</div>
+</div>
+</details>
+
+<!-- ══════════════════ 05 ══════════════════ -->
+<h2 id="s5">5. Session expire &amp; đặt observer ở đâu</h2>
+<div class="qa-tools"><button type="button" data-act="open">Mở tất cả</button><button type="button" data-act="close">Thu gọn tất cả</button></div>
+
+<details class="qa">
+<summary><h3><span class="lv lv-y" title="Trung–cao">●</span> <code>post(.sessionDidExpire)</code> ở tầng token — đặt observer ở đâu để logout toàn app?</h3></summary>
+<div class="qa-body">
+<p><strong>Nguyên tắc: đúng một người lắng nghe, sống suốt đời app.</strong> Sai lầm phổ biến nhất là đặt observer ở nhiều ViewController/View → token hết hạn, 5 màn hình cùng nghe → 5 lần logout, màn hình nhảy loạn.</p>
+
+<h4>SwiftUI</h4>
+<div class="hl"><pre><code>@MainActor
+final class AppState: ObservableObject {
+    @Published var daDangNhap = false
+
+    init() {
+        NotificationCenter.default.addObserver(
+            forName: .sessionDidExpire, object: nil, queue: .main   <span class="c">// ⚠️ queue: .main</span>
+        ) { [weak self] _ in
+            self?.dangXuat()
+        }
+    }
+
+    func dangXuat() {
+        guard daDangNhap else { return }     <span class="c">// ⚠️ chống gọi nhiều lần</span>
+        KeychainStore.xoaToken()
+        daDangNhap = false
+    }
+}
+
+@main
+struct MyApp: App {
+    @StateObject private var appState = AppState()      <span class="c">// sống suốt đời app</span>
+    var body: some Scene {
+        WindowGroup {
+            Group {
+                if appState.daDangNhap { HomeView() } else { LoginView() }
+            }
+            .environmentObject(appState)
+        }
+    }
+}
+</code></pre></div>
+<p>Đổi <code>daDangNhap = false</code> là toàn app tự quay về <code>LoginView</code> — không cần dismiss từng màn hình.</p>
+
+<h4>UIKit — đặt ở <code>AppDelegate</code> / <code>AppCoordinator</code></h4>
+<div class="hl"><pre><code>observer = NotificationCenter.default.addObserver(
+    forName: .sessionDidExpire, object: nil, queue: .main
+) { [weak self] _ in self?.veManHinhLogin() }
+
+private func veManHinhLogin() {
+    guard let window = UIApplication.shared.windows.first else { return }
+    guard !(window.rootViewController is LoginViewController) else { return }  <span class="c">// đã ở đó rồi</span>
+    window.rootViewController = LoginViewController()
+    UIView.transition(with: window, duration: 0.3,
+                      options: .transitionCrossDissolve, animations: nil)
+}
+</code></pre></div>
+
+<h4>Bốn lưu ý dễ mắc lỗi</h4>
+<ol>
+<li><strong>Notification chạy trên thread nào gọi <code>post</code>.</strong> <code>post</code> từ tầng network → observer chạy trên background → cập nhật UI ở đó là crash hoặc lỗi lạ. Khai báo <code>queue: .main</code> (gọn hơn tự <code>DispatchQueue.main.async</code>).</li>
+<li><strong>Nhiều request cùng nhận 401.</strong> 5 API song song → 5 lần <code>post</code> → logout 5 lần. Cái <code>guard daDangNhap else { return }</code> chính là để chặn việc này.</li>
+<li><strong>Giữ token của observer</strong> (bản block-based trả về một object). Không lưu thì vẫn chạy nhưng không remove được.</li>
+<li><strong><code>[weak self]</code></strong> — thành thói quen tốt, dù <code>AppState</code> sống mãi cũng không sao.</li>
+</ol>
+
+<div class="key">
+<p class="key-title">Có nên dùng NotificationCenter không?</p>
+<p>Nó hoạt động tốt cho ca này, nhưng nhược điểm là <strong>ẩn</strong>: đọc code không biết ai đang nghe, tên notification chỉ là chuỗi nên gõ sai không báo lỗi, và test khó.</p>
+<p>Cách gọn hơn — <code>SessionManager</code> tự công bố trạng thái bằng <code>@Published</code>, tầng network gọi trực tiếp <code>await SessionManager.shared.hetHan()</code> thay vì <code>post</code>. Rõ ràng hơn, compiler kiểm tra được, dễ test, và <code>@MainActor</code> lo luôn chuyện thread.</p>
+</div>
+
+<div class="say">
+<p class="say-title">Nói trong interview</p>
+<p>"Em đặt observer ở một chỗ duy nhất sống suốt đời app — SwiftUI là <code>AppState</code> khai báo <code>@StateObject</code> ở <code>App</code>, UIKit là <code>AppDelegate</code> hoặc <code>AppCoordinator</code>. Không đặt ở ViewController vì nhiều màn hình cùng nghe sẽ logout nhiều lần.</p>
+<p>Hai thứ em luôn để ý: dùng <code>queue: .main</code> vì notification được post từ tầng network chạy trên background; và có cờ kiểm tra để nhiều request cùng nhận 401 thì logout chỉ chạy một lần.</p>
+<p>Thực tế em thấy dùng một <code>SessionManager</code> với <code>@Published</code> còn rõ hơn NotificationCenter, vì compiler kiểm tra được và dễ test hơn."</p>
+</div>
+</div>
+</details>
+
+<!-- ══════════════════ 06 ══════════════════ -->
+<h2 id="s6">6. Singleton — khi nào dùng</h2>
+<div class="qa-tools"><button type="button" data-act="open">Mở tất cả</button><button type="button" data-act="close">Thu gọn tất cả</button></div>
+
+<details class="qa">
+<summary><h3><span class="lv lv-g" title="Nền tảng">●</span> Singleton nên dùng khi nào?</h3></summary>
+<div class="qa-body">
+<div class="hl"><pre><code>final class SessionManager {
+    static let shared = SessionManager()
+    private init() { }      <span class="c">// ⚠️ bắt buộc — chặn người khác tạo bản thứ hai</span>
+}
+</code></pre></div>
+
+<h4>Nên dùng khi thỏa CẢ HAI</h4>
+<ol>
+<li><strong>Tồn tại nhiều bản là vô nghĩa hoặc gây sai.</strong> Trạng thái đăng nhập (2 phiên cùng lúc là bug), cache ảnh (2 cache thì tốn gấp đôi và không đồng bộ), kết nối database (nhiều kết nối gây tranh chấp file).</li>
+<li><strong>Nó đại diện cho một tài nguyên duy nhất thật sự.</strong> Chỉ có một cái điện thoại → một <code>UIApplication</code>, một <code>UserDefaults</code>, một <code>FileManager.default</code>. Apple dùng singleton ở đúng những chỗ này.</li>
+</ol>
+
+<h4>Không nên dùng</h4>
+<p><strong>Đừng dùng chỉ vì "cho tiện lấy ở mọi nơi"</strong> — đó là lý do phổ biến nhất và cũng sai nhất. Tiện lúc viết, khổ lúc sửa.</p>
+<div class="hl"><pre><code>APIClient.shared        <span class="bad">// ⚠️ nên inject, để test được</span>
+UserViewModel.shared    <span class="bad">// ❌ ViewModel gắn với màn hình, không dùng chung</span>
+Coordinator.shared      <span class="bad">// ❌ điều hướng phụ thuộc ngữ cảnh</span>
+</code></pre></div>
+
+<p><strong>Ba vấn đề singleton gây ra:</strong></p>
+<ul>
+<li><strong>Rất khó test.</strong> <code>APIClient.shared.get("/user")</code> là gắn cứng — không có cách nào sạch để test mà không gọi mạng thật.</li>
+<li><strong>Phụ thuộc bị che giấu.</strong> Đọc <code>init</code> tưởng class không cần gì; thực ra bên trong gọi 6 singleton khác.</li>
+<li><strong>Trạng thái dùng chung, thay đổi khó lường.</strong> Bất cứ chỗ nào cũng sửa được → có bug không biết ai đã sửa.</li>
+</ul>
+
+<h4>Cách "vừa đủ" — singleton nhưng vẫn test được</h4>
+<div class="hl"><pre><code>final class UserRepository {
+    private let api: APIClientProtocol
+    init(api: APIClientProtocol = APIClient.shared) {   <span class="good">// mặc định tiện, test thay được</span>
+        self.api = api
+    }
+}
+
+let repo = UserRepository()                      <span class="c">// code thật</span>
+let repo = UserRepository(api: FakeAPIClient())  <span class="c">// test</span>
+</code></pre></div>
+
+<h4>Hai lưu ý kỹ thuật</h4>
+<p><strong><code>static let</code> đã an toàn về thread khi khởi tạo</strong> — Swift đảm bảo chạy đúng một lần. Không cần viết code khóa cho phần khởi tạo.</p>
+<p><strong>Nhưng bên trong thì không tự an toàn.</strong> Vì singleton được truy cập từ mọi nơi, nó gần như chắc chắn bị gọi từ nhiều thread:</p>
+<div class="hl"><pre><code>actor ImageCache {
+    static let shared = ImageCache()
+    private var store: [URL: UIImage] = [:]      <span class="good">// ✅ actor tự tuần tự hóa</span>
+
+    func image(for url: URL) -> UIImage? { store[url] }
+    func set(_ image: UIImage, for url: URL) { store[url] = image }
+}
+</code></pre></div>
+
+<div class="say">
+<p class="say-title">Nói trong interview</p>
+<p>"Em dùng singleton khi việc có nhiều bản là vô nghĩa hoặc gây sai — trạng thái đăng nhập, cache ảnh, kết nối database. Những thứ đại diện cho một tài nguyên duy nhất thật sự.</p>
+<p>Em tránh dùng chỉ vì tiện lấy ở mọi nơi. Vấn đề lớn nhất là khó test: nếu code gọi thẳng <code>APIClient.shared</code> thì em không thể đưa fake vào để test mà không gọi mạng thật.</p>
+<p>Cách em dung hòa là vẫn có <code>shared</code> nhưng để nó làm giá trị mặc định của <code>init</code> — code thật gọi <code>init()</code> cho tiện, test thì truyền fake vào.</p>
+<p>Về thread thì <code>static let</code> đã an toàn khi khởi tạo, nhưng dữ liệu bên trong không tự an toàn — nên em thường khai báo nó là <code>actor</code> hoặc <code>@MainActor</code>."</p>
+</div>
+
+<div class="key">
+<p class="key-title">Câu hỏi bẫy: "Singleton có phải anti-pattern không?"</p>
+<p>"Em không nghĩ nó là anti-pattern, mà là công cụ dễ bị lạm dụng. Apple dùng nó ở <code>UserDefaults.standard</code>, <code>FileManager.default</code>, <code>URLSession.shared</code> — đều hợp lý. Vấn đề là khi người ta dùng nó thay cho dependency injection ở mọi nơi."</p>
+</div>
+</div>
+</details>
+
+<!-- ══════════════════ 07 ══════════════════ -->
+<h2 id="s7">7. SOLID trong code thật</h2>
+<div class="qa-tools"><button type="button" data-act="open">Mở tất cả</button><button type="button" data-act="close">Thu gọn tất cả</button></div>
+
+<details class="qa">
+<summary><h3><span class="lv lv-y" title="Trung–cao">●</span> Tóm gọn năm nguyên tắc — và cái nào dùng nhiều nhất trong iOS?</h3></summary>
+<div class="qa-body">
+<p><strong>Điều quan trọng khi trả lời:</strong> đừng đọc thuộc năm cái tên. Người phỏng vấn muốn biết bạn <em>từng gặp vấn đề</em> mà chúng giải quyết.</p>
+
+<div class="tw"><table>
+<thead><tr><th></th><th>Nguyên tắc</th><th>Bạn gặp vấn đề khi</th><th>Dấu hiệu trong code</th></tr></thead>
+<tbody>
+<tr><td><strong>S</strong></td><td>Mỗi class một trách nhiệm</td><td>Sửa gì cũng sợ hỏng chỗ khác</td><td>File 800 dòng, 4 lý do để bị sửa</td></tr>
+<tr><td><strong>O</strong></td><td>Thêm code, đừng sửa code cũ</td><td><strong>Thêm tính năng mới</strong></td><td><code>if-else</code> dài mà vài tuần lại thêm nhánh</td></tr>
+<tr><td><strong>L</strong></td><td>Class con thay được cho cha</td><td><strong>Chạy app</strong></td><td><code>as?</code> để kiểm tra kiểu, <code>fatalError</code></td></tr>
+<tr><td><strong>I</strong></td><td>Protocol nhỏ theo nhu cầu</td><td><strong>Viết code, compiler bắt</strong></td><td>Hàm rỗng viết cho đủ</td></tr>
+<tr><td><strong>D</strong></td><td>Phụ thuộc protocol, không phải class</td><td>Muốn viết test</td><td><code>private let api = APIClient()</code></td></tr>
+</tbody>
+</table></div>
+
+<h4>D — dùng nhiều nhất trong iOS</h4>
+<div class="hl"><pre><code><span class="bad">// ❌ Gắn cứng → không test được</span>
+final class UserViewModel {
+    private let api = APIClient()
+}
+
+<span class="good">// ✅ Phụ thuộc protocol</span>
+protocol UserFetching { func fetch() async throws -> User }
+
+final class UserViewModel {
+    private let api: UserFetching
+    init(api: UserFetching) { self.api = api }
+}
+
+UserViewModel(api: APIClient())     <span class="c">// code thật</span>
+UserViewModel(api: FakeAPI())       <span class="c">// test</span>
+</code></pre></div>
+<p>Đây chính là lý do <strong>không nên</strong> gọi thẳng <code>APIClient.shared</code> khắp nơi.</p>
+
+<div class="key">
+<p class="key-title">S và D dễ bị nhầm là một</p>
+<p><strong>S</strong> nói về <em>class này làm gì</em> (chia việc). <strong>D</strong> nói về <em>class này phụ thuộc vào ai</em>. Bạn có thể tách class rất gọn mà vẫn gắn cứng vào <code>APIClient()</code> — tức đúng S, sai D.</p>
+</div>
+
+<div class="say">
+<p class="say-title">Nói trong interview</p>
+<p>"Trong iOS em dùng nhiều nhất là <strong>S</strong> và <strong>D</strong>. S là khi em tách ViewModel ra khỏi tầng network và tầng lưu trữ — trước đây em từng có ViewModel gần 700 dòng, sửa gì cũng sợ hỏng chỗ khác. D thì em inject qua <code>init</code> bằng protocol, chủ yếu để test được.</p>
+<p>Còn ba cái kia em hiểu nguyên lý nhưng thực tế ít phải nghĩ tới, vì em làm việc với struct và protocol nhiều hơn là kế thừa class."</p>
+<p><em>Nếu bị hỏi "vậy áp dụng hết SOLID luôn nhé?"</em> → "Em nghĩ không nên áp dụng máy móc. Tách quá nhỏ thì code rải ra hàng chục file, đọc còn khó hơn. Em chỉ tách khi thấy dấu hiệu thật. <strong>Nguyên tắc là để nhận ra vấn đề, không phải để làm trước khi có vấn đề.</strong>"</p>
+</div>
+</div>
+</details>
+
+<details class="qa">
+<summary><h3><span class="lv lv-y" title="Trung–cao">●</span> O — Open/Closed: ví dụ deeplink</h3></summary>
+<div class="qa-body">
+<div class="hl"><pre><code><span class="bad">// ❌ Ba tháng sau: 7 nhánh else if, hàm dài 150 dòng</span>
+func handle(_ url: URL) {
+    let path = url.host ?? ""
+    if path == "product" { router.showProduct(url.pathComponents[1]) }
+    else if path == "profile" { router.showProfile() }
+    else if path == "livestream" { ... }   <span class="c">// sửa hàm cũ → có thể làm hỏng cái đang chạy</span>
+}
+</code></pre></div>
+
+<p><strong>Vấn đề cụ thể:</strong></p>
+<ul>
+<li>Thêm <code>livestream</code> → sửa <code>DeeplinkHandler</code> → QA phải test lại <strong>cả 7</strong> loại link</li>
+<li>Có lần thêm nhánh mới đặt sai chỗ, <code>return</code> sớm → link <code>product</code> chết. <strong>Bug ở tính năng cũ do thêm tính năng mới.</strong></li>
+<li>Hai người thêm hai loại link cùng lúc → conflict git ở đúng file đó</li>
+</ul>
+
+<div class="hl"><pre><code><span class="good">// ✅ Thêm mới = viết thêm file, không chạm code cũ</span>
+protocol DeeplinkRoute {
+    func canHandle(_ url: URL) -> Bool
+    func handle(_ url: URL, router: Router)
+}
+
+struct ProductRoute: DeeplinkRoute {
+    func canHandle(_ url: URL) -> Bool { url.host == "product" }
+    func handle(_ url: URL, router: Router) {
+        router.showProduct(url.pathComponents[1])
+    }
+}
+
+final class DeeplinkHandler {
+    private let routes: [DeeplinkRoute]
+    func handle(_ url: URL) {
+        routes.first { $0.canHandle(url) }?.handle(url, router: router)
+    }
+}
+</code></pre></div>
+
+<p><strong>Được gì:</strong> <code>DeeplinkHandler</code> không bị sửa nữa. Bug ở <code>LivestreamRoute</code> không thể làm chết <code>ProductRoute</code>. Hai người thêm hai route không conflict. Test được từng route riêng.</p>
+
+<div class="key">
+<p class="key-title">Từ khóa nhận biết O</p>
+<p>Một <code>switch</code>/<code>if-else</code> mà <strong>cứ vài tuần lại phải thêm một nhánh</strong>.</p>
+<p>Nếu <code>switch</code> đó <strong>không bao giờ thay đổi</strong> (ví dụ 4 hướng lên/xuống/trái/phải) thì đừng tách — O chỉ đáng làm ở chỗ thực sự hay thay đổi.</p>
+</div>
+</div>
+</details>
+
+<details class="qa">
+<summary><h3><span class="lv lv-r" title="Senior">●</span> L và I nhìn giống nhau — khác nhau chỗ nào?</h3></summary>
+<div class="qa-body">
+<div class="tw"><table>
+<thead><tr><th></th><th>L — Liskov</th><th>I — Segregation</th></tr></thead>
+<tbody>
+<tr><td>Câu hỏi</td><td>"Implementation này có <strong>làm đúng</strong> điều protocol hứa?"</td><td>"Protocol này có <strong>hỏi quá nhiều</strong>?"</td></tr>
+<tr><td>Vấn đề nằm ở</td><td>Cách class <strong>cài đặt</strong></td><td>Cách protocol được <strong>thiết kế</strong></td></tr>
+<tr><td>Phát hiện khi</td><td>App chạy sai / crash</td><td>Đang viết code, compiler ép</td></tr>
+<tr><td>Dấu hiệu</td><td><code>fatalError</code>, <code>as?</code> kiểm tra kiểu</td><td>Hàm rỗng viết cho đủ</td></tr>
+<tr><td>Sửa bằng</td><td>Tách protocol theo <strong>năng lực</strong></td><td>Tách protocol theo <strong>nhóm chức năng</strong></td></tr>
+</tbody>
+</table></div>
+
+<h4>L — ví dụ Storage</h4>
+<div class="hl"><pre><code>protocol Storage {
+    func save(_ data: Data, key: String) throws
+}
+
+final class DiskStorage: Storage {
+    func save(_ data: Data, key: String) throws { try data.write(to: fileURL(key)) }
+}
+
+final class KeychainStorage: Storage {
+    func save(_ data: Data, key: String) throws {
+        guard data.count &lt; 4096 else {
+            fatalError("Keychain không lưu được dữ liệu lớn")   <span class="bad">// 💥</span>
+        }
+    }
+}
+
+final class CacheManager {
+    private let storage: Storage
+    init(storage: Storage) { self.storage = storage }
+    func luuAnh(_ data: Data) throws { try storage.save(data, key: "avatar") }
+}
+</code></pre></div>
+
+<p><strong>Rồi ở file khác, do người khác viết vài tháng sau:</strong></p>
+<div class="hl"><pre><code>let cacheManager = CacheManager(storage: KeychainStorage())
+<span class="c">//                              Compiler: OK, KeychainStorage là Storage ✅</span>
+
+try cacheManager.luuAnh(anh2MB)     <span class="bad">// 💥 CRASH</span>
+</code></pre></div>
+
+<p><strong>Tại sao lại có người làm vậy?</strong> Không phải vì họ dốt:</p>
+<ul>
+<li><strong>Người mới vào team</strong> — thấy cần một <code>Storage</code>, nghĩ "cache token thì lưu Keychain an toàn hơn". Hợp lý theo góc nhìn của họ, vì <strong>protocol không nói gì về giới hạn kích thước</strong>.</li>
+<li><strong>Refactor sau này</strong> — ban đầu <code>CacheManager</code> chỉ lưu token (nhỏ) → Keychain đúng. Sáu tháng sau thêm cache avatar vào cùng class.</li>
+<li><strong>Đổi theo môi trường</strong> — <code>isSecureMode ? KeychainStorage() : DiskStorage()</code>. Trông rất "đúng chuẩn", nhưng bật <code>isSecureMode</code> là crash.</li>
+</ul>
+
+<p><strong>Chữa cháy SAI</strong> (nhiều người làm):</p>
+<div class="hl"><pre><code>func luuAnh(_ data: Data) throws {
+    if storage is KeychainStorage {           <span class="bad">// ⚠️ trừu tượng đã thất bại</span>
+        throw CacheError.khongHoTro
+    }
+    try storage.save(data, key: "avatar")
+}
+</code></pre></div>
+<p>Giờ <code>CacheManager</code> phải <em>biết tên các implementation cụ thể</em> — lợi ích của protocol biến mất.</p>
+
+<p><strong>Sửa đúng: tách theo năng lực</strong></p>
+<div class="hl"><pre><code>protocol Storage { ... }              <span class="c">// dữ liệu bất kỳ kích thước</span>
+protocol SecureStorage { ... }        <span class="c">// dữ liệu nhỏ, bí mật</span>
+
+final class DiskStorage: Storage { ... }
+final class KeychainStorage: SecureStorage { ... }    <span class="c">// ← không còn là Storage</span>
+
+CacheManager(storage: KeychainStorage())
+<span class="good">// ❌ Compile error: KeychainStorage does not conform to Storage</span>
+</code></pre></div>
+<p><strong>Đây là điểm quan trọng nhất:</strong> sửa đúng theo Liskov biến một <em>bug lúc chạy</em> thành một <em>lỗi lúc compile</em>.</p>
+
+<h4>L trong kế thừa class — ca bạn chắc đã gặp</h4>
+<div class="hl"><pre><code>class ProductViewController: BaseViewController {
+    override func viewDidLoad() {
+        <span class="bad">// ❌ quên gọi super</span>
+        setupCollectionView()
+    }
+}
+<span class="c">// Kết quả: không có nav bar, loading không hiện, analytics không ghi.</span>
+<span class="c">// Không crash, không báo lỗi — chỉ chạy sai. Mất 2 giờ để tìm.</span>
+
+<span class="good">// ✅ Template method — cha khóa hàm, chừa chỗ cho con</span>
+class BaseViewController: UIViewController {
+    final override func viewDidLoad() {       <span class="c">// final → con không override được</span>
+        super.viewDidLoad()
+        setupNavigationBar()
+        trackScreenView()
+        setupUI()
+    }
+    func setupUI() { }                        <span class="c">// con override cái này</span>
+}
+</code></pre></div>
+
+<h4>I — ví dụ protocol analytics</h4>
+<div class="hl"><pre><code><span class="bad">// ❌ Protocol quá to</span>
+protocol AnalyticsService {
+    func logEvent(_ name: String, params: [String: Any])
+    func setUserId(_ id: String)
+    func logScreen(_ name: String)
+    func logPurchase(amount: Double, currency: String)
+    func logError(_ error: Error)
+    func flush()
+}
+
+final class InternalErrorLogger: AnalyticsService {
+    func logError(_ error: Error) { api.send(error) }    <span class="c">// ← chỉ cần đúng hàm này</span>
+
+    <span class="c">// 5 hàm còn lại phải viết cho compiler vui</span>
+    func logEvent(_ name: String, params: [String: Any]) { }
+    func setUserId(_ id: String) { }
+    func logScreen(_ name: String) { }
+    func logPurchase(amount: Double, currency: String) { }
+    func flush() { }
+}
+</code></pre></div>
+<p><strong>Vấn đề:</strong> viết 5 hàm rỗng vô nghĩa · sáu tháng sau thêm <code>logVideoPlay</code> vào protocol → <strong>cả 3 class</strong> lỗi compile · ai đọc sẽ tưởng nó ghi được purchase, gọi vào → im lặng không có gì xảy ra.</p>
+
+<div class="hl"><pre><code><span class="good">// ✅ Chia theo nhu cầu</span>
+protocol EventLogging  { func logEvent(_ name: String, params: [String: Any]) }
+protocol ScreenLogging { func logScreen(_ name: String) }
+protocol ErrorLogging  { func logError(_ error: Error) }
+
+final class InternalErrorLogger: ErrorLogging {
+    func logError(_ error: Error) { api.send(error) }    <span class="c">// hết, đúng 1 hàm</span>
+}
+
+final class CheckoutViewModel {
+    private let logger: EventLogging     <span class="c">// không cần biết về screen, error, user</span>
+}
+</code></pre></div>
+
+<div class="key">
+<p class="key-title">Tại sao chúng cảm thấy giống nhau — bạn có lý do</p>
+<p><strong>Vi phạm I thường dẫn tới vi phạm L.</strong> Protocol quá to buộc người ta viết hàm rỗng (I); mà hàm rỗng nghĩa là <strong>lời hứa bị phá</strong> (L) — ai truyền <code>InternalErrorLogger</code> vào hàm cần <code>logPurchase</code> thì doanh thu không được ghi, im lặng, không ai biết.</p>
+<p>Sửa I thường sửa luôn L. Nhưng L còn xảy ra ở chỗ khác — như <code>BaseViewController</code> quên <code>super</code>, ở đó protocol chẳng liên quan gì.</p>
+</div>
+
+<div class="say">
+<p class="say-title">Nói trong interview</p>
+<p>"Em hiểu <strong>I</strong> là về <strong>kích thước của protocol</strong> — nếu protocol quá to, class chỉ cần một hàm vẫn phải viết cả chục hàm rỗng.</p>
+<p><strong>L</strong> là về <strong>implementation có giữ đúng lời hứa</strong> hay không. Ví dụ protocol <code>Storage</code>, một implementation là Keychain lại <code>fatalError</code> khi dữ liệu lớn — nghĩa là nó không thay thế được cho <code>Storage</code>. Dấu hiệu em nhận ra là khi phải viết <code>if storage is KeychainStorage</code> để kiểm tra trước khi dùng.</p>
+<p>Hai cái liên quan nhau ở chỗ: protocol quá to (vi phạm I) khiến người ta viết hàm rỗng, mà hàm rỗng chính là phá lời hứa (vi phạm L). Nhưng L còn xảy ra khi kế thừa class nữa — như override <code>viewDidLoad</code> rồi quên gọi <code>super</code>, cái đó không liên quan gì tới protocol."</p>
+</div>
+</div>
+</details>
+
+<!-- ══════════════════ 08 ══════════════════ -->
+<h2 id="s8">8. Dựa vào đâu để chọn kiến trúc</h2>
+<div class="qa-tools"><button type="button" data-act="open">Mở tất cả</button><button type="button" data-act="close">Thu gọn tất cả</button></div>
+
+<details class="qa">
+<summary><h3><span class="lv lv-r" title="Senior">●</span> Chọn kiến trúc phù hợp với app dựa vào đâu?</h3></summary>
+<div class="qa-body">
+<blockquote><p>Không có kiến trúc "tốt nhất". Người phỏng vấn hỏi câu này để xem bạn <strong>chọn có lý do</strong> hay chỉ làm theo cái từng thấy. Câu trả lời tệ: "Em dùng MVVM vì nó tốt."</p></blockquote>
+
+<h4>Năm yếu tố quyết định</h4>
+<p><strong>1. Tuổi thọ và quy mô app</strong> — yếu tố lớn nhất.</p>
+<div class="tw"><table>
+<thead><tr><th>App</th><th>Kiến trúc hợp lý</th></tr></thead>
+<tbody>
+<tr><td>Demo, POC, 3 màn hình, làm 1 tuần</td><td>MVC là đủ. Thêm lớp chỉ làm chậm</td></tr>
+<tr><td>App vừa, 15–30 màn hình, bảo trì 1–2 năm</td><td>MVVM + Repository</td></tr>
+<tr><td>App lớn, 100+ màn hình, sống 5 năm</td><td>Clean Architecture / modular, hoặc TCA</td></tr>
+</tbody>
+</table></div>
+<p><em>Nguyên tắc: kiến trúc phải trả giá trước, thu lợi sau. App sống 2 tháng thì không kịp thu lợi.</em></p>
+
+<p><strong>2. Số người trong team</strong> — 1 người → nhẹ · 3–8 người → MVVM + Coordinator để mỗi người làm một feature không conflict · 15+ người → <strong>module hóa</strong> (Swift Package riêng từng feature), lúc này ranh giới quan trọng hơn tên kiến trúc.</p>
+
+<p><strong>3. Yêu cầu về test</strong> — câu hỏi thẳng: <em>có ai thực sự viết test không?</em> Không viết test → đừng tách 5 lớp chỉ vì "để test được", bạn trả giá mà không nhận lợi ích. Có yêu cầu coverage (fintech, healthcare) → đây là lý do chính đáng nhất cho Clean Architecture.</p>
+
+<p><strong>4. Độ phức tạp của state</strong> — hay bị bỏ qua nhưng rất quan trọng. State đơn giản (mỗi màn hình tự lo dữ liệu) → MVVM thoải mái. State phức tạp chia sẻ nhiều nơi (giỏ hàng ảnh hưởng 6 màn hình, chat realtime, editor có undo/redo, offline-first cần sync) → cân nhắc <strong>TCA</strong> / Redux-style, có một nguồn sự thật duy nhất.</p>
+
+<p><strong>5. UIKit hay SwiftUI</strong> — SwiftUI đã tự có View–State binding → MVVM hợp tự nhiên, và <strong>không cần Coordinator</strong> (dùng <code>NavigationStack</code> với path). UIKit không có binding sẵn → MVVM cần Combine/closure, và Coordinator có giá trị thật.</p>
+
+<h4>Các lựa chọn</h4>
+<div class="tw"><table>
+<thead><tr><th>Kiến trúc</th><th>Dùng khi</th><th>Đừng dùng khi</th></tr></thead>
+<tbody>
+<tr><td>MVC</td><td>App nhỏ, prototype, màn hình đơn giản (Settings, About)</td><td>Màn hình nhiều state + gọi API → "Massive VC"</td></tr>
+<tr><td>MVVM</td><td>Đa số app thương mại — mặc định hợp lý</td><td>—</td></tr>
+<tr><td>MVVM + Repository</td><td>App có API + cache/offline. <strong>Cân bằng nhất</strong></td><td>—</td></tr>
+<tr><td>MVVM + Coordinator</td><td>UIKit, nhiều luồng điều hướng (onboarding, deeplink, A/B)</td><td>SwiftUI thường không cần</td></tr>
+<tr><td>Clean / VIPER</td><td>App rất lớn, nhiều team, test cao</td><td>App CRUD — 5 file cho một danh sách</td></tr>
+<tr><td>TCA</td><td>State phức tạp chia sẻ, team quen functional</td><td>Learning curve dốc, phụ thuộc thư viện ngoài</td></tr>
+</tbody>
+</table></div>
+
+<h4>Ba sai lầm hay gặp</h4>
+<ol>
+<li><strong>Chọn kiến trúc nặng cho app nhẹ.</strong> Clean Architecture cho app 5 màn hình → mỗi tính năng nhỏ sửa 6 file. Team chán, bắt đầu "đi tắt", cuối cùng tệ hơn MVC.</li>
+<li><strong>Ép một kiến trúc cho toàn bộ app.</strong> Không sai nếu Settings dùng MVC đơn giản trong khi Checkout dùng MVVM + Use Case.</li>
+<li><strong>Nghĩ rằng kiến trúc là về đặt tên file.</strong> Tạo folder <code>Domain/</code>, <code>Data/</code>, <code>Presentation/</code> nhưng ViewModel vẫn gọi <code>URLSession</code> trực tiếp → không được gì. Cái quan trọng là <strong>hướng phụ thuộc</strong>.</li>
+</ol>
+
+<div class="say">
+<p class="say-title">Nói trong interview</p>
+<p>"Em không có kiến trúc mặc định cho mọi app. Em xem mấy yếu tố: <strong>app sống bao lâu và lớn cỡ nào</strong>; <strong>số người trong team</strong>; <strong>có test hay không</strong>; và <strong>độ phức tạp của state</strong>.</p>
+<p>Thực tế trong dự án em làm, MVVM cộng Repository là điểm cân bằng tốt nhất — ViewModel lo hiển thị, Repository che đi chuyện dữ liệu lấy từ mạng hay từ cache, và inject bằng protocol nên test được ViewModel mà không cần gọi mạng thật.</p>
+<p>Yếu tố cuối mà em nghĩ quan trọng nhất là <strong>team đã quen cái gì</strong>. Kiến trúc tốt mà cả team không hiểu thì sẽ bị làm sai và thành mớ lộn xộn, còn tệ hơn kiến trúc đơn giản làm đúng."</p>
+<p><em>"MVVM có nhược điểm gì?"</em> → "ViewModel dễ phình to nếu không tách tầng data, vì nó dễ thành chỗ chứa mọi thứ — gọi API, parse, format, validate. Ngoài ra MVVM không nói gì về điều hướng."</p>
+<p><em>"Nếu vào dự án đang là MVC lộn xộn thì làm gì?"</em> → "Em không viết lại toàn bộ. Em áp dụng dần trên tính năng mới, và mỗi khi phải sửa màn hình cũ thì tách nó ra một chút. Viết lại toàn bộ thường tốn nhiều tháng mà người dùng không thấy gì mới, rất khó thuyết phục."</p>
+</div>
+</div>
+</details>
+
+<!-- ══════════════════ 09 ══════════════════ -->
+<h2 id="s9">9. MVVM + Repository cụ thể</h2>
+<div class="qa-tools"><button type="button" data-act="open">Mở tất cả</button><button type="button" data-act="close">Thu gọn tất cả</button></div>
+
+<details class="qa">
+<summary><h3><span class="lv lv-y" title="Trung–cao">●</span> Luồng đầy đủ: View → ViewModel → Repository → API/Store</h3></summary>
+<div class="qa-body">
+<p>Ví dụ: danh sách sản phẩm, có cache để xem offline.</p>
+
+<div class="diag"><pre><code>┌──────────────┐   ┌───────────────┐   ┌──────────────┐   ┌─────────┐
+│     View     │──►│   ViewModel   │──►│  Repository  │──►│   API   │
+│  (SwiftUI)   │◄──│  @Published   │◄──│  cache/mạng  │   ├─────────┤
+└──────────────┘   └───────────────┘   └──────────────┘──►│  Store  │
+   vẽ, nhận         state, format,      lấy dữ liệu       └─────────┘
+   tương tác        dịch lỗi            từ đâu             HTTP, DB
+
+      Hướng phụ thuộc luôn đi XUỐNG, luôn qua PROTOCOL
+</code></pre></div>
+
+<div class="hl"><pre><code><span class="c">// ── Hai nguồn dữ liệu ──</span>
+protocol ProductAPIProtocol   { func fetchProducts() async throws -> [Product] }
+protocol ProductStoreProtocol { func load() throws -> [Product]
+                                func save(_ products: [Product]) throws }
+
+<span class="c">// ── Repository: che đi việc "dữ liệu từ đâu" ──</span>
+protocol ProductRepositoryProtocol {
+    func products(forceRefresh: Bool) async throws -> [Product]
+}
+
+final class ProductRepository: ProductRepositoryProtocol {
+    private let api: ProductAPIProtocol
+    private let store: ProductStoreProtocol
+
+    func products(forceRefresh: Bool) async throws -> [Product] {
+        if !forceRefresh, let cached = try? store.load(), !cached.isEmpty {
+            return cached
+        }
+        do {
+            let fresh = try await api.fetchProducts()
+            try? store.save(fresh)
+            return fresh
+        } catch {
+            <span class="c">// Mất mạng → dùng cache nếu có</span>
+            if let cached = try? store.load(), !cached.isEmpty { return cached }
+            throw error
+        }
+    }
+}
+</code></pre></div>
+<p><strong>Đây là giá trị của Repository:</strong> toàn bộ quyết định "lấy cache hay gọi mạng, mạng lỗi thì làm gì" nằm gọn một chỗ.</p>
+
+<div class="hl"><pre><code>@MainActor
+final class ProductListViewModel: ObservableObject {
+    @Published private(set) var products: [Product] = []
+    @Published private(set) var isLoading = false
+    @Published var errorMessage: String?
+
+    private let repository: ProductRepositoryProtocol
+    init(repository: ProductRepositoryProtocol) { self.repository = repository }
+
+    func load(forceRefresh: Bool = false) async {
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            products = try await repository.products(forceRefresh: forceRefresh)
+        } catch {
+            errorMessage = "Không tải được danh sách sản phẩm"
+        }
+    }
+}
+
+struct ProductListView: View {
+    @StateObject var viewModel: ProductListViewModel
+    var body: some View {
+        List(viewModel.products) { ProductRow(product: $0) }
+            .overlay { if viewModel.isLoading { ProgressView() } }
+            .refreshable { await viewModel.load(forceRefresh: true) }
+            .task { await viewModel.load() }
+    }
+}
+</code></pre></div>
+
+<div class="hl"><pre><code><span class="c">// ── Test được ngay ──</span>
+struct FakeRepo: ProductRepositoryProtocol {
+    func products(forceRefresh: Bool) async throws -> [Product] {
+        [Product(id: "1", name: "Áo", price: 100, imageURL: url)]
+    }
+}
+
+let vm = ProductListViewModel(repository: FakeRepo())
+await vm.load()
+XCTAssertEqual(vm.products.count, 1)        <span class="good">// không gọi mạng thật</span>
+</code></pre></div>
+
+<div class="key">
+<p class="key-title">Ở màn hình này KHÔNG cần Use Case</p>
+<p>ViewModel chỉ làm một việc: gọi lấy dữ liệu, gán vào <code>@Published</code>. Thêm một lớp nữa là thêm file mà không được gì.</p>
+</div>
+</div>
+</details>
+
+<!-- ══════════════════ 10 ══════════════════ -->
+<h2 id="s10">10. Repository chia thế nào</h2>
+<div class="qa-tools"><button type="button" data-act="open">Mở tất cả</button><button type="button" data-act="close">Thu gọn tất cả</button></div>
+
+<details class="qa">
+<summary><h3><span class="lv lv-y" title="Trung–cao">●</span> Repository có phải chứa tất cả func của một feature?</h3></summary>
+<div class="qa-body">
+<p><strong>Không.</strong> Repository chia theo <strong>loại dữ liệu</strong>, không theo feature.</p>
+<ul>
+<li><strong>Feature</strong> = một luồng người dùng (Checkout, Onboarding, Profile)</li>
+<li><strong>Repository</strong> = một loại dữ liệu (Product, Cart, User, Order)</li>
+</ul>
+<p>Quan hệ giữa chúng là <strong>nhiều–nhiều</strong>, không phải một–một.</p>
+
+<div class="diag"><pre><code>Feature Checkout ─┬─► CartRepository
+                  ├─► UserRepository
+                  └─► OrderRepository
+
+Feature Cart ─────┬─► CartRepository       ◄── dùng lại
+                  └─► ProductRepository
+
+Feature Profile ──┬─► UserRepository       ◄── dùng lại
+                  └─► OrderRepository      ◄── dùng lại
+</code></pre></div>
+<p><code>UserRepository</code> được 5 feature dùng. Nếu chia theo feature, <code>CheckoutRepository</code> và <code>ProfileRepository</code> sẽ <strong>cùng gọi API user</strong> — code trùng, cache trùng, sửa một chỗ quên chỗ kia.</p>
+
+<h4>Cái sai: "God Repository"</h4>
+<div class="hl"><pre><code><span class="bad">// ❌ Gom mọi thứ của feature shopping — 30 hàm</span>
+protocol ShoppingRepositoryProtocol {
+    func fetchProducts() async throws -> [Product]
+    func addToCart(_ id: String) async throws
+    func placeOrder() async throws -> Order
+    func currentUser() async throws -> User
+    func fetchBanners() async throws -> [Banner]
+    <span class="c">// ... 25 hàm nữa</span>
+}
+</code></pre></div>
+<p>Sau 6 tháng: file 800 dòng, ba người sửa cùng lúc → conflict liên tục · màn Profile chỉ cần <code>currentUser()</code> nhưng phải nhận object 30 hàm · viết fake để test Profile → phải cài đặt <strong>30 hàm rỗng</strong> (đúng vi phạm Interface Segregation).</p>
+
+<h4>Ba câu hỏi để quyết định chia hay không</h4>
+<ol>
+<li><strong>"Các hàm này có nói về cùng một thứ không?"</strong></li>
+<li><strong>"Chúng có dùng chung cache/state không?"</strong> — dấu hiệu mạnh nhất. <code>add</code>, <code>remove</code>, <code>clear</code> đều sửa <em>cùng một</em> giỏ hàng → phải ở cùng Repository, vì tách ra thì hai object giữ hai bản giỏ hàng lệch nhau.</li>
+<li><strong>"Chúng có thay đổi cùng lúc không?"</strong> — API team đổi endpoint sản phẩm thì chỉ <code>ProductRepository</code> phải sửa → chia đúng.</li>
+</ol>
+
+<h4>Ánh xạ thực tế — app e-commerce</h4>
+<div class="tw"><table>
+<thead><tr><th>Repository</th><th>Màn hình dùng nó</th><th>Số lượng</th></tr></thead>
+<tbody>
+<tr><td><code>UserRepository</code></td><td>Profile, Edit Profile, Settings, Checkout, Home, Order Detail</td><td>6</td></tr>
+<tr><td><code>ProductRepository</code></td><td>Home, Category, Search, Product Detail, Wishlist, Related</td><td>6</td></tr>
+<tr><td><code>CartRepository</code></td><td>Cart, Product Detail, Checkout, Tab badge, Widget</td><td>5</td></tr>
+<tr><td><code>AuthRepository</code></td><td>Login, Sign Up, Forgot Password, Verify Email</td><td>4</td></tr>
+<tr><td><code>NotificationRepository</code></td><td>Notification List</td><td>1</td></tr>
+</tbody>
+</table></div>
+<p><code>NotificationRepository</code> chỉ 1 màn hình dùng — <strong>vẫn nên tách riêng</strong>, vì nó là thực thể riêng, có API riêng, cache riêng.</p>
+
+<h4>Chiều ngược lại</h4>
+<div class="tw"><table>
+<thead><tr><th>Màn hình</th><th>Repository nó cần</th><th>Số lượng</th></tr></thead>
+<tbody>
+<tr><td>Login</td><td><code>AuthRepository</code></td><td>1</td></tr>
+<tr><td>Product Detail</td><td><code>Product</code>, <code>Cart</code>, <code>Wishlist</code></td><td>3</td></tr>
+<tr><td>Checkout</td><td><code>Cart</code>, <code>User</code>, <code>Address</code>, <code>Promotion</code>, <code>Order</code></td><td>5</td></tr>
+</tbody>
+</table></div>
+<p>Checkout dùng 5 repository là bình thường — nhưng 5 cái đó nên nằm trong tay <strong>Use Case</strong>, không phải ViewModel.</p>
+
+<div class="key">
+<p class="key-title">Cách kiểm tra bạn đang chia đúng</p>
+<p><strong>"Khi API team đổi endpoint X, tôi phải sửa mấy file?"</strong> Chỉ <code>UserRepository</code> → đúng. Phải sửa <code>ProfileRepository</code> và <code>CheckoutRepository</code> → chia theo feature, đang trùng lặp.</p>
+<p><strong>Ảnh hưởng nhiều feature vì cùng dữ liệu</strong> thì đúng; <strong>vì gom nhiều dữ liệu</strong> thì sai.</p>
+<p>Con số tham khảo: <strong>3–7 hàm</strong> một Repository là vùng thoải mái. Trên 10 hàm thì xem lại có phải nó đang gom hai thực thể.</p>
+</div>
+</div>
+</details>
+
+<details class="qa">
+<summary><h3><span class="lv lv-r" title="Senior">●</span> Case study: soi một <code>AuthRepositoryProtocol</code> 8 hàm</h3></summary>
+<div class="qa-body">
+<div class="hl"><pre><code>protocol AuthRepositoryProtocol {
+    func login(credentials: LoginCredentials) async throws -> LoginResult
+    func loginWithApple(credential: AppleCredential) async throws -> LoginResult
+    func loginWithGoogle(credential: GoogleCredential) async throws -> LoginResult
+    func forgotPassword(email: String) async throws
+    func setNewPassword(encryptedPassword: String) async throws
+    func sendConfirmEmail(email: String) async throws
+    func verifyEmailCode(email: String, code: String) async throws
+    func fetchUserProfile() async throws -> UserProfile
+}
+</code></pre></div>
+
+<p><strong>Kết luận: không phải "gom sai".</strong> 7/8 hàm đều về xác thực, cùng dùng token store, cùng đổi khi API auth đổi → giữ <strong>một implementation</strong> là đúng. Nhưng có bốn điểm nên sửa.</p>
+
+<div class="tw"><table>
+<thead><tr><th>Điểm</th><th>Đánh giá</th></tr></thead>
+<tbody>
+<tr><td>8 hàm auth ở cùng chỗ</td><td>✅ Hợp lý — cùng chủ đề, cùng token store</td></tr>
+<tr><td><code>fetchUserProfile()</code></td><td>❌ Chuyển sang <code>UserRepository</code></td></tr>
+<tr><td><code>encryptedPassword</code></td><td>⚠️ Đổi thành <code>password</code>, mã hóa bên trong</td></tr>
+<tr><td><code>setNewPassword</code> không có token</td><td>⚠️ Thêm <code>ResetToken</code> để compiler ép đúng trình tự</td></tr>
+<tr><td>Một protocol cho cả 8 hàm</td><td>⚠️ Tách 3 protocol theo cách dùng, giữ 1 implementation</td></tr>
+</tbody>
+</table></div>
+
+<h4>1. <code>fetchUserProfile()</code> sai chỗ</h4>
+<p>Đây là <em>đọc dữ liệu người dùng</em>, không phải xác thực. Nếu để đây, màn hình Profile/Settings phải nhận cả object có <code>login</code> và <code>forgotPassword</code> mà chúng không dùng — và dần Profile cache/refresh/update sẽ bị nhồi vào <code>AuthRepository</code>, sáu tháng sau thành God Repository thật.</p>
+<p><em>Nếu API login không trả profile và phải gọi ngay sau login</em> → đó là việc của Use Case:</p>
+<div class="hl"><pre><code>struct LoginUseCase {
+    let authRepo: AuthRepositoryProtocol
+    let userRepo: UserRepositoryProtocol
+
+    func execute(_ credentials: LoginCredentials) async throws -> UserProfile {
+        _ = try await authRepo.login(credentials: credentials)
+        return try await userRepo.profile(forceRefresh: true)
+    }
+}
+</code></pre></div>
+
+<h4>2. <code>encryptedPassword</code> — chi tiết kỹ thuật rò ra ngoài</h4>
+<p>Ai gọi hàm này? ViewModel. Nghĩa là <strong>ViewModel phải tự mã hóa</strong> → phải biết thuật toán (việc của tầng data) · ba màn hình gọi → ba nơi phải làm đúng, một nơi sai là lỗ bảo mật · đổi thuật toán → sửa tất cả nơi gọi.</p>
+<div class="hl"><pre><code><span class="good">// ✅ Repository nhận mật khẩu thật, tự lo mã hóa</span>
+func setNewPassword(_ password: String) async throws {
+    let encrypted = PasswordEncryptor.encrypt(password)   <span class="c">// chi tiết ở lại đây</span>
+    try await api.setPassword(encrypted)
+}
+</code></pre></div>
+
+<h4>3. <code>setNewPassword</code> thiếu ngữ cảnh</h4>
+<p>Hàm này không nhận email, không nhận token reset → dựa vào <strong>state ẩn</strong> bên trong Repository. Gọi nó mà chưa qua <code>forgotPassword</code> → hành vi không xác định, compiler không chặn được.</p>
+<div class="hl"><pre><code><span class="good">// ✅ Làm cho phụ thuộc hiện rõ — không có ResetToken thì KHÔNG gọi được</span>
+func verifyResetCode(email: String, code: String) async throws -> ResetToken
+func setNewPassword(_ password: String, token: ResetToken) async throws
+</code></pre></div>
+
+<h4>4. Tách protocol theo cách dùng</h4>
+<p>Ba nhóm màn hình dùng ba nhóm hàm <strong>rời nhau hoàn toàn</strong> — không màn hình nào dùng quá 3 hàm:</p>
+<div class="hl"><pre><code>protocol SignInRepository {
+    func login(credentials: LoginCredentials) async throws -> LoginResult
+    func loginWithApple(credential: AppleCredential) async throws -> LoginResult
+    func loginWithGoogle(credential: GoogleCredential) async throws -> LoginResult
+}
+protocol PasswordRecoveryRepository {
+    func forgotPassword(email: String) async throws
+    func verifyResetCode(email: String, code: String) async throws -> ResetToken
+    func setNewPassword(_ password: String, token: ResetToken) async throws
+}
+protocol EmailVerificationRepository {
+    func sendConfirmEmail(email: String) async throws
+    func verifyEmailCode(email: String, code: String) async throws
+}
+
+<span class="c">// Implementation vẫn là MỘT — vì chúng chia sẻ api và tokenStore</span>
+final class AuthRepository: SignInRepository,
+                            PasswordRecoveryRepository,
+                            EmailVerificationRepository {
+    private let api: AuthAPIProtocol
+    private let tokenStore: TokenStoreProtocol
+    <span class="c">// ... đủ 8 hàm — đó là bình thường và đúng</span>
+}
+
+<span class="c">// Khác biệt nằm ở NƠI DÙNG</span>
+final class LoginViewModel {
+    private let repo: SignInRepository            <span class="c">// chỉ thấy 3 hàm login</span>
+}
+final class ForgotPasswordViewModel {
+    private let repo: PasswordRecoveryRepository  <span class="c">// chỉ thấy 3 hàm reset</span>
+}
+</code></pre></div>
+
+<p><strong>Lợi ích lớn nhất — viết test:</strong></p>
+<div class="hl"><pre><code><span class="bad">// Trước: fake cho LoginViewModel phải cài đặt cả 8 hàm</span>
+struct FakeAuthRepo: AuthRepositoryProtocol {
+    func login(...) -> LoginResult { .init(token: "abc") }
+    func loginWithApple(...) -> LoginResult { fatalError() }   <span class="bad">// ← bug chờ crash</span>
+    func forgotPassword(...) { }                               <span class="c">// rỗng</span>
+    func fetchUserProfile(...) -> UserProfile { fatalError() } <span class="bad">// ← bug chờ crash</span>
+    <span class="c">// ... 4 hàm rỗng nữa</span>
+}
+
+<span class="good">// Sau: đúng những gì cần</span>
+struct FakeSignInRepo: SignInRepository {
+    func login(credentials: LoginCredentials) async throws -> LoginResult { .init(token: "abc") }
+    func loginWithApple(credential: AppleCredential) async throws -> LoginResult { .init(token: "a") }
+    func loginWithGoogle(credential: GoogleCredential) async throws -> LoginResult { .init(token: "g") }
+}
+</code></pre></div>
+<p>Những chỗ <code>fatalError()</code> ở bản đầu chính là <strong>vi phạm Liskov đang chờ crash</strong>.</p>
+
+<h4>Khi Repository buộc phải to</h4>
+<p>Ví dụ <code>MessageRepository</code> trong app chat: gửi, nhận, đánh dấu đã đọc, xóa, sửa, tải trang cũ, sync offline — có thể 12 hàm. Giữ <strong>một implementation</strong> (cần chung cache và socket), nhưng <strong>tách protocol theo cách dùng</strong>:</p>
+<div class="hl"><pre><code>protocol MessageReading { func messages(chatID: String, before: Date?) async throws -> [Message] }
+protocol MessageSending { func send(_ text: String, chatID: String) async throws }
+
+actor MessageRepository: MessageReading, MessageSending { ... }
+
+final class ChatInputViewModel {
+    private let sender: MessageSending      <span class="c">// không thấy phần đọc</span>
+}
+</code></pre></div>
+</div>
+</details>
+
+<!-- ══════════════════ 11 ══════════════════ -->
+<h2 id="s11">11. Use Case — khi nào tách và implement ra sao</h2>
+<div class="qa-tools"><button type="button" data-act="open">Mở tất cả</button><button type="button" data-act="close">Thu gọn tất cả</button></div>
+
+<details class="qa">
+<summary><h3><span class="lv lv-r" title="Senior">●</span> Logic phức tạp đến mức nào thì nên tách Use Case?</h3></summary>
+<div class="qa-body">
+<p>Không phải "logic phức tạp" chung chung. Có <strong>bốn dấu hiệu cụ thể</strong>:</p>
+
+<p><strong>1. Một hành động cần nhiều repository</strong> — khi ViewModel phải <em>phối hợp</em> nhiều nguồn dữ liệu theo một trình tự, đó là business logic.</p>
+
+<p><strong>2. Logic có quy tắc nghiệp vụ — không phải quy tắc hiển thị</strong></p>
+<div class="hl"><pre><code><span class="c">// Quy tắc HIỂN THỊ → thuộc ViewModel</span>
+var priceText: String { "\(price.formatted()) đ" }
+var isButtonEnabled: Bool { !products.isEmpty }
+
+<span class="c">// Quy tắc NGHIỆP VỤ → nên là Use Case</span>
+<span class="c">// "VIP giảm 10%, nhưng không cộng dồn với mã khuyến mãi.</span>
+<span class="c">//  Đơn trên 500k miễn phí ship, trừ vùng xa.</span>
+<span class="c">//  Voucher hết hạn thì bỏ qua, và tổng giảm không vượt 50% giá trị đơn."</span>
+</code></pre></div>
+<p><strong>Câu hỏi phân biệt:</strong> <em>nếu làm bản Android, quy tắc này có giống y hệt không?</em> Giống → nghiệp vụ → Use Case.</p>
+
+<p><strong>3. Logic được dùng ở nhiều màn hình</strong> — tính tổng giỏ hàng xuất hiện ở màn Cart, Checkout, badge tab bar, widget. Để trong ViewModel là copy 4 lần.</p>
+
+<p><strong>4. Logic cần test rất kỹ</strong> — 15 tổ hợp quy tắc giảm giá. Test qua ViewModel thì phải dựng <code>@MainActor</code>, <code>@Published</code>, fake 5 repository.</p>
+
+<h4>Khi nào KHÔNG cần</h4>
+<ul>
+<li>Màn hình chỉ hiển thị dữ liệu từ một API</li>
+<li>Form nhập rồi gửi lên server, server tự validate</li>
+<li>Logic chỉ dùng ở đúng một màn hình và chỉ vài dòng</li>
+</ul>
+<p>App CRUD đơn thuần thì <strong>hầu hết màn hình không cần Use Case</strong>. Chỉ vài màn hình cốt lõi cần.</p>
+
+<div class="hl"><pre><code><span class="bad">// ❌ Use Case rỗng nghĩa — file trung gian không làm gì</span>
+struct GetCartUseCase {
+    let repo: CartRepositoryProtocol
+    func execute() async throws -> Cart {
+        try await repo.currentCart()      <span class="c">// không thêm gì cả</span>
+    }
+}
+</code></pre></div>
+<p>Nhiều người viết kiểu này vì nghĩ "Clean Architecture thì mọi thứ phải qua Use Case". Kết quả là 40 file chỉ để chuyển tiếp lời gọi.</p>
+</div>
+</details>
+
+<details class="qa">
+<summary><h3><span class="lv lv-r" title="Senior">●</span> "Sáu bước" trong ViewModel là gì — và tại sao xấu?</h3></summary>
+<div class="qa-body">
+<p>Đây là <code>PlaceOrderUseCase</code> nhưng để <strong>nằm trong ViewModel</strong>:</p>
+
+<div class="hl"><pre><code>func datHang() async {
+    isLoading = true
+    defer { isLoading = false }
+    do {
+        <span class="c">// ───── BƯỚC 1: Lấy giỏ hàng và user ─────</span>
+        async let cartTask = cartRepo.currentCart()
+        async let userTask = userRepo.currentUser()
+        let (cart, user) = try await (cartTask, userTask)
+
+        <span class="c">// ───── BƯỚC 2: Kiểm tra điều kiện nghiệp vụ ─────</span>
+        guard !cart.items.isEmpty else { errorMessage = "Giỏ hàng đang trống"; return }
+        let hetHang = cart.items.filter { !$0.isAvailable }
+        guard hetHang.isEmpty else { errorMessage = "\(hetHang[0].name) đã hết hàng"; return }
+        let subtotal = cart.items.reduce(0) { $0 + $1.price * Double($1.quantity) }
+        guard subtotal &gt;= 50_000 else { errorMessage = "Đơn tối thiểu 50.000đ"; return }
+
+        <span class="c">// ───── BƯỚC 3: Lấy địa chỉ giao hàng ─────</span>
+        guard let address = try await addressRepo.defaultAddress() else {
+            errorMessage = "Vui lòng thêm địa chỉ giao hàng"; return
+        }
+        guard address.isDeliverable else {
+            errorMessage = "Chúng tôi chưa giao tới khu vực này"; return
+        }
+
+        <span class="c">// ───── BƯỚC 4: Xử lý voucher ─────</span>
+        var voucher: Voucher?
+        if !voucherCode.isEmpty {
+            voucher = try await promoRepo.voucher(code: voucherCode)
+            guard let v = voucher, v.isValid(at: .now) else {
+                errorMessage = "Mã giảm giá không hợp lệ hoặc đã hết hạn"; return
+            }
+            guard subtotal &gt;= v.minimumOrder else {
+                errorMessage = "Đơn tối thiểu \(v.minimumOrder)đ để dùng mã này"; return
+            }
+        }
+
+        <span class="c">// ───── BƯỚC 5: Tính giá ─────</span>
+        let memberDiscount = user.isVIP ? subtotal * 0.1 : 0
+        var voucherDiscount: Double = 0
+        if memberDiscount == 0, let v = voucher { voucherDiscount = v.amount(for: subtotal) }
+        let totalDiscount = min(memberDiscount + voucherDiscount, subtotal * 0.5)
+        let shippingFee = address.isRemoteArea ? 50_000.0
+                        : (subtotal &gt;= 500_000 ? 0 : 30_000)
+        let total = subtotal - totalDiscount + shippingFee
+
+        <span class="c">// ───── BƯỚC 6: Đặt hàng và dọn dẹp ─────</span>
+        let order = try await orderRepo.place(cart: cart, total: total,
+                                              address: address, voucher: voucher)
+        try await cartRepo.clear()
+        if let v = voucher { try await promoRepo.markUsed(v.code) }
+
+        navigateToSuccess(order)      <span class="c">// ← rốt cuộc mới tới việc của ViewModel</span>
+    } catch {
+        errorMessage = "Đặt hàng thất bại, vui lòng thử lại"
+    }
+}
+</code></pre></div>
+<p>Một hàm 70 dòng, và đây còn là bản viết gọn.</p>
+
+<h4>Bốn vấn đề cụ thể</h4>
+<p><strong>1. Bên Android phải viết lại y hệt.</strong> Toàn bộ 6 bước là <em>quy tắc nghiệp vụ của công ty</em>, không phải chuyện iOS. Một hôm iOS sửa "đơn tối thiểu lên 100k" mà Android không biết → hai app cho hai kết quả khác nhau.</p>
+
+<p><strong>2. Test một quy tắc phải dựng cả thế giới.</strong> Muốn kiểm tra "VIP có voucher thì voucher bị bỏ qua" → năm fake, một spy, <code>@MainActor</code>, <code>async</code>. Và có 15 tổ hợp cần test.</p>
+
+<p><strong>3. Logic bị copy sang màn hình khác.</strong> Ba tháng sau có màn "Mua ngay" cần đúng quy tắc tính giá đó → copy. Rồi widget "tổng tiền giỏ hàng" → chỗ thứ ba. Rồi màn Cart preview tổng tiền → chỗ thứ tư. Business đổi "VIP giảm 15%" → sửa 4 chỗ và <strong>chắc chắn quên một chỗ</strong>. Người dùng thấy giá ở màn Cart khác giá ở màn Checkout.</p>
+
+<p><strong>4. Sáu bước có thứ tự bắt buộc, nhưng không ai biết.</strong> Tại sao bước 3 (địa chỉ) phải trước bước 5 (tính giá)? Vì phí ship phụ thuộc địa chỉ. Tại sao <code>cartRepo.clear()</code> phải sau <code>orderRepo.place()</code>? Vì đặt hàng lỗi thì không được xóa giỏ. Những ràng buộc này <strong>chỉ tồn tại trong đầu người viết</strong> — người mới vào đảo hai dòng cho "gọn hơn" → bug mất giỏ hàng của khách.</p>
+</div>
+</details>
+
+<details class="qa">
+<summary><h3><span class="lv lv-r" title="Senior">●</span> <code>PlaceOrderUseCase</code> — implement đầy đủ</h3></summary>
+<div class="qa-body">
+<h4>Bước chuẩn bị: lỗi nghiệp vụ mang theo DỮ LIỆU, không phải câu chữ</h4>
+<div class="hl"><pre><code>enum OrderError: Error, Equatable {
+    case gioHangTrong
+    case hetHang(tenSanPham: String)
+    case duoiDonToiThieu(toiThieu: Double)
+    case chuaCoDiaChi
+    case khongGiaoTiKhuVuc(tenKhuVuc: String)
+    case voucherKhongTonTai
+    case voucherHetHan(ngayHetHan: Date)
+    case voucherChuaDuDieuKien(donToiThieu: Double)
+}
+</code></pre></div>
+<p>Nhờ vậy đổi từ ngữ hiển thị không cần chạm Use Case, và làm đa ngôn ngữ cũng dễ.</p>
+
+<h4>Implementation</h4>
+<div class="hl"><pre><code>protocol PlaceOrderUseCaseProtocol {
+    func execute(voucherCode: String?) async throws -> Order
+}
+
+struct PlaceOrderUseCase: PlaceOrderUseCaseProtocol {
+    let cartRepo: CartRepositoryProtocol
+    let userRepo: UserRepositoryProtocol
+    let addressRepo: AddressRepositoryProtocol
+    let promoRepo: PromotionRepositoryProtocol
+    let orderRepo: OrderRepositoryProtocol
+    let calculatePrice: CalculatePriceUseCase
+
+    func execute(voucherCode: String?) async throws -> Order {
+
+        <span class="c">// ═══ BƯỚC 1: Thu thập dữ liệu — 3 lời gọi độc lập, chạy song song ═══</span>
+        async let cartTask = cartRepo.currentCart()
+        async let userTask = userRepo.currentUser()
+        async let addressTask = addressRepo.defaultAddress()
+        let (cart, user, addressOrNil) = try await (cartTask, userTask, addressTask)
+
+        <span class="c">// ═══ BƯỚC 2: Kiểm tra giỏ hàng ═══</span>
+        guard !cart.items.isEmpty else { throw OrderError.gioHangTrong }
+        if let hetHang = cart.items.first(where: { !$0.isAvailable }) {
+            throw OrderError.hetHang(tenSanPham: hetHang.name)
+        }
+        let subtotal = cart.items.reduce(0) { $0 + $1.price * Double($1.quantity) }
+        guard subtotal &gt;= Constants.donToiThieu else {
+            throw OrderError.duoiDonToiThieu(toiThieu: Constants.donToiThieu)
+        }
+
+        <span class="c">// ═══ BƯỚC 3: Kiểm tra địa chỉ ═══</span>
+        <span class="c">// Phải trước bước 5 vì phí ship phụ thuộc địa chỉ</span>
+        guard let address = addressOrNil else { throw OrderError.chuaCoDiaChi }
+        guard address.isDeliverable else {
+            throw OrderError.khongGiaoTiKhuVuc(tenKhuVuc: address.district)
+        }
+
+        <span class="c">// ═══ BƯỚC 4: Xác thực voucher ═══</span>
+        let voucher = try await validateVoucher(voucherCode, subtotal: subtotal)
+
+        <span class="c">// ═══ BƯỚC 5: Tính giá — giao cho use case chuyên tính giá ═══</span>
+        let price = calculatePrice.execute(cart: cart, user: user,
+                                           voucher: voucher, address: address)
+
+        <span class="c">// ═══ BƯỚC 6: Đặt hàng, RỒI MỚI dọn dẹp ═══</span>
+        <span class="c">// Thứ tự bắt buộc: place() phải thành công trước clear() —</span>
+        <span class="c">// nếu clear trước mà place lỗi thì khách mất giỏ hàng.</span>
+        let order = try await orderRepo.place(cart: cart, price: price,
+                                              address: address, voucher: voucher)
+
+        <span class="c">// Dọn dẹp — KHÔNG được làm hỏng kết quả đặt hàng thành công</span>
+        try? await cartRepo.clear()
+        if let voucher { try? await promoRepo.markUsed(voucher.code) }
+
+        return order
+    }
+
+    private func validateVoucher(_ code: String?, subtotal: Double) async throws -> Voucher? {
+        guard let code, !code.isEmpty else { return nil }
+        guard let voucher = try await promoRepo.voucher(code: code) else {
+            throw OrderError.voucherKhongTonTai
+        }
+        guard voucher.expiresAt &gt; .now else {
+            throw OrderError.voucherHetHan(ngayHetHan: voucher.expiresAt)
+        }
+        guard subtotal &gt;= voucher.minimumOrder else {
+            throw OrderError.voucherChuaDuDieuKien(donToiThieu: voucher.minimumOrder)
+        }
+        return voucher
+    }
+}
+</code></pre></div>
+
+<h4>Ba quyết định thiết kế đáng chú ý</h4>
+<p><strong>1. <code>async let</code> ở bước 1.</strong> Ba lời gọi không phụ thuộc nhau → song song. Tuần tự là 300ms, song song còn 100ms.</p>
+
+<p><strong>2. <code>try?</code> ở phần dọn dẹp — có chủ ý.</strong> Đơn đã đặt thành công rồi. Nếu <code>clear()</code> lỗi mà dùng <code>try</code>, hàm sẽ throw → ViewModel hiện "Đặt hàng thất bại" → <strong>khách đặt thành công nhưng thấy thông báo thất bại, và sẽ đặt lại lần nữa</strong>. Đó là bug nghiêm trọng về tiền. Giỏ hàng chưa dọn là vấn đề nhỏ, sửa được sau.</p>
+
+<p><strong>3. Tách <code>CalculatePriceUseCase</code> ra riêng.</strong> Màn Cart, widget, màn "Mua ngay" cũng cần tính giá nhưng <em>không</em> đặt hàng. Use Case gọi Use Case khác là bình thường và đúng — miễn hướng phụ thuộc không tạo vòng.</p>
+
+<h4><code>CalculatePriceUseCase</code> — hàm thuần</h4>
+<div class="hl"><pre><code>struct PriceBreakdown: Equatable {
+    let subtotal: Double
+    let memberDiscount: Double
+    let voucherDiscount: Double
+    let shippingFee: Double
+    var total: Double { subtotal - memberDiscount - voucherDiscount + shippingFee }
+}
+
+struct CalculatePriceUseCase {
+    func execute(cart: Cart, user: User, voucher: Voucher?,
+                 address: Address) -> PriceBreakdown {
+        let subtotal = cart.items.reduce(0) { $0 + $1.price * Double($1.quantity) }
+
+        <span class="c">// Quy tắc: VIP giảm 10%</span>
+        let memberDiscount = user.isVIP ? subtotal * 0.1 : 0
+
+        <span class="c">// Quy tắc: voucher không cộng dồn với giảm giá thành viên</span>
+        var voucherDiscount: Double = 0
+        if memberDiscount == 0, let voucher, voucher.isValid(at: .now) {
+            voucherDiscount = voucher.amount(for: subtotal)
+        }
+
+        <span class="c">// Quy tắc: tổng giảm không vượt 50% giá trị đơn</span>
+        let maxDiscount = subtotal * 0.5
+        let totalDiscount = min(memberDiscount + voucherDiscount, maxDiscount)
+        let raw = memberDiscount + voucherDiscount
+        let scale = raw &gt; 0 ? totalDiscount / raw : 0
+
+        <span class="c">// Quy tắc: trên 500k miễn phí ship, trừ vùng xa</span>
+        let shippingFee: Double = address.isRemoteArea ? 50_000
+                                : (subtotal &gt;= 500_000 ? 0 : 30_000)
+
+        return PriceBreakdown(subtotal: subtotal,
+                              memberDiscount: memberDiscount * scale,
+                              voucherDiscount: voucherDiscount * scale,
+                              shippingFee: shippingFee)
+    }
+}
+</code></pre></div>
+<p>Ba điều về class này: <strong>không <code>async</code></strong> (không gọi mạng) · <strong>không import UIKit/SwiftUI</strong> · <strong>không có state</strong> (cùng đầu vào luôn cho cùng đầu ra). Đó là Use Case tốt nhất: một hàm thuần.</p>
+
+<h4>Use Case KHÔNG làm gì</h4>
+<div class="tw"><table>
+<thead><tr><th>Không làm</th><th>Vì sao</th><th>Ai làm</th></tr></thead>
+<tbody>
+<tr><td>Format tiền thành <code>"900.000 đ"</code></td><td>Đó là hiển thị</td><td>ViewModel</td></tr>
+<tr><td>Trả về chuỗi tiếng Việt</td><td>Đa ngôn ngữ, Android dùng chuỗi khác</td><td>ViewModel</td></tr>
+<tr><td>Điều hướng sang màn Success</td><td>Nó không biết gì về màn hình</td><td>ViewModel / Coordinator</td></tr>
+<tr><td>Bật/tắt loading</td><td>State của UI</td><td>ViewModel</td></tr>
+<tr><td>Biết <code>URLSession</code>, <code>Core Data</code></td><td>Chi tiết kỹ thuật</td><td>Repository</td></tr>
+<tr><td><code>import SwiftUI</code> / <code>UIKit</code></td><td>Nếu phải import là đã sai tầng</td><td>—</td></tr>
+</tbody>
+</table></div>
+
+<div class="key">
+<p class="key-title">Phép thử Use Case có sạch không</p>
+<p>Thử <strong>copy file đó sang một project macOS command-line</strong>. Nếu nó compile được, bạn viết đúng.</p>
+</div>
+
+<h4>ViewModel dịch lỗi — extension ở tầng Presentation</h4>
+<div class="hl"><pre><code><span class="c">// Để ở tầng Presentation, KHÔNG cùng file với OrderError</span>
+extension OrderError {
+    var thongBaoNguoiDung: String {
+        switch self {
+        case .gioHangTrong:              return "Giỏ hàng đang trống"
+        case .hetHang(let ten):          return "\(ten) đã hết hàng, vui lòng bỏ khỏi giỏ"
+        case .duoiDonToiThieu(let min):  return "Đơn hàng tối thiểu \(min.formatted(.currency(code: "VND")))"
+        case .chuaCoDiaChi:              return "Vui lòng thêm địa chỉ giao hàng"
+        case .khongGiaoTiKhuVuc(let kv): return "Chúng tôi chưa giao tới \(kv)"
+        case .voucherKhongTonTai:        return "Mã giảm giá không tồn tại"
+        case .voucherHetHan(let ngay):   return "Mã đã hết hạn ngày \(ngay.formatted(date: .abbreviated, time: .omitted))"
+        case .voucherChuaDuDieuKien(let min): return "Cần đơn tối thiểu \(min.formatted(.currency(code: "VND"))) để dùng mã này"
+        }
+    }
+}
+
+@MainActor
+final class CheckoutViewModel: ObservableObject {
+    @Published private(set) var isLoading = false
+    @Published var errorMessage: String?
+    @Published var voucherCode = ""
+
+    private let placeOrder: PlaceOrderUseCaseProtocol      <span class="c">// 1 dependency, không phải 5</span>
+
+    func datHang() async {
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            let order = try await placeOrder.execute(
+                voucherCode: voucherCode.isEmpty ? nil : voucherCode
+            )
+            navigateToSuccess(order)
+        } catch let error as OrderError {
+            errorMessage = error.thongBaoNguoiDung     <span class="good">// biết chính xác lỗi gì</span>
+        } catch {
+            errorMessage = "Không thể đặt hàng, vui lòng kiểm tra kết nối"
+        }
+    }
+}
+</code></pre></div>
+<p>Từ 70 dòng còn 12. Và 12 dòng này đúng là việc của ViewModel: bật loading, gọi hành động, dịch lỗi, điều hướng.</p>
+
+<h4>Test — lý do bạn làm tất cả những việc trên</h4>
+<div class="hl"><pre><code><span class="c">// Test hàm thuần: 4 dòng, không fake, không async, không MainActor</span>
+func testVIPKhongCongDonVoucher() {
+    let result = CalculatePriceUseCase().execute(
+        cart: cart, user: .vip, voucher: voucher, address: address
+    )
+    XCTAssertEqual(result.memberDiscount, 100_000)
+    XCTAssertEqual(result.voucherDiscount, 0)      <span class="c">// quy tắc không cộng dồn</span>
+    XCTAssertEqual(result.shippingFee, 0)          <span class="c">// trên 500k miễn ship</span>
+    XCTAssertEqual(result.total, 900_000)
+}
+
+<span class="c">// Test quan trọng nhất — bảo vệ quy tắc "đặt lỗi thì không mất giỏ hàng"</span>
+func test_datHangLoi_thiKhongDonGioHang() async {
+    let cartRepo = SpyCartRepo(cart: .mauHopLe)
+    let sut = PlaceOrderUseCase(
+        cartRepo: cartRepo,
+        userRepo: FakeUserRepo(),
+        addressRepo: FakeAddressRepo(),
+        promoRepo: FakePromoRepo(),
+        orderRepo: FailingOrderRepo(),             <span class="c">// ← đặt hàng lỗi</span>
+        calculatePrice: CalculatePriceUseCase()
+    )
+
+    _ = try? await sut.execute(voucherCode: nil)
+
+    XCTAssertFalse(cartRepo.clearDuocGoi)          <span class="good">// giỏ hàng phải còn nguyên</span>
+}
+</code></pre></div>
+<p>Test cuối là ví dụ hoàn hảo cho câu "tách ra để được gì?" — nó bảo vệ một quy tắc mà nếu vi phạm thì khách mất giỏ hàng, và <strong>không thể viết được</strong> khi logic nằm trong ViewModel.</p>
+
+<h4>Lắp lại toàn bộ</h4>
+<div class="hl"><pre><code><span class="c">// AppContainer.swift — toàn bộ việc "lắp" tập trung một chỗ</span>
+let placeOrder = PlaceOrderUseCase(
+    cartRepo: CartRepository(api: CartAPI(), store: CartStore()),
+    userRepo: UserRepository(api: UserAPI(), store: UserStore()),
+    addressRepo: AddressRepository(api: AddressAPI()),
+    promoRepo: PromotionRepository(api: PromoAPI()),
+    orderRepo: OrderRepository(api: OrderAPI()),
+    calculatePrice: CalculatePriceUseCase()
+)
+
+let checkoutVM = CheckoutViewModel(placeOrder: placeOrder)
+CheckoutView(viewModel: checkoutVM)
+</code></pre></div>
+<p>Không tầng nào tự đi tạo dependency của mình — đó là Dependency Inversion trong thực tế.</p>
+
+<div class="say">
+<p class="say-title">Nói trong interview</p>
+<p>"<code>PlaceOrderUseCase</code> của em nhận năm repository qua init và có đúng một hàm <code>execute</code>. Bên trong nó làm sáu bước: lấy giỏ hàng, user, địa chỉ song song bằng <code>async let</code>; kiểm tra giỏ trống, hàng hết, đơn tối thiểu; kiểm tra địa chỉ có giao được không; xác thực voucher; gọi <code>CalculatePriceUseCase</code>; cuối cùng đặt hàng rồi dọn giỏ.</p>
+<p>Hai chỗ em cân nhắc kỹ. Một là <strong>thứ tự</strong> — <code>place()</code> phải thành công trước khi <code>clear()</code> giỏ hàng, vì dọn trước mà đặt lỗi thì khách mất giỏ. Hai là phần dọn dẹp em dùng <code>try?</code> chứ không <code>try</code>, vì đơn đã đặt xong rồi; nếu <code>clear()</code> lỗi mà throw thì ViewModel hiện 'đặt hàng thất bại' và khách sẽ đặt lại — thành đơn trùng.</p>
+<p>Về lỗi thì em định nghĩa <code>OrderError</code> mang theo dữ liệu, ví dụ <code>.hetHang(tenSanPham:)</code> chứ không phải chuỗi tiếng Việt. Phần dịch em để ở extension bên tầng Presentation, nhờ vậy tầng Domain không biết gì về ngôn ngữ hiển thị."</p>
+</div>
+</div>
+</details>
+
+<details class="qa">
+<summary><h3><span class="lv lv-r" title="Senior">●</span> Mỗi Use Case chỉ có một <code>execute</code> — vậy ViewModel phải giữ 5 Use Case?</h3></summary>
+<div class="qa-body">
+<p>Quy tắc "từ 3 dependency trở lên là cần Use Case" dễ gây hiểu sai. Vấn đề <strong>không phải số lượng</strong>, mà là <strong>loại việc</strong> ViewModel đang làm.</p>
+<ul>
+<li>ViewModel giữ 5 <strong>repository</strong> là xấu — nó đang tự <em>phối hợp nghiệp vụ</em>, phải biết trình tự sáu bước.</li>
+<li>ViewModel giữ 3 <strong>Use Case</strong> thì <strong>không xấu</strong> — mỗi Use Case đã là một hành động hoàn chỉnh, ViewModel chỉ gọi đúng cái tương ứng với nút người dùng bấm.</li>
+</ul>
+
+<p>Nhưng con số 5 vẫn quá nhiều, vì hai lý do:</p>
+
+<h4>Lý do 1: không phải hành động nào cũng cần Use Case</h4>
+<div class="tw"><table>
+<thead><tr><th>Hành động ở màn Checkout</th><th>Có nghiệp vụ?</th><th>Cần gì</th></tr></thead>
+<tbody>
+<tr><td>Tải giỏ hàng để hiển thị</td><td>Không, chỉ đọc</td><td><code>CartRepository</code> trực tiếp</td></tr>
+<tr><td>Tải danh sách địa chỉ</td><td>Không, chỉ đọc</td><td><code>AddressRepository</code> trực tiếp</td></tr>
+<tr><td>Tính giá</td><td><strong>Có</strong> — VIP, voucher, ship</td><td><code>CalculatePriceUseCase</code></td></tr>
+<tr><td>Áp mã giảm giá</td><td><strong>Có</strong> — hạn, điều kiện</td><td><code>ApplyVoucherUseCase</code></td></tr>
+<tr><td>Đặt hàng</td><td><strong>Có</strong> — 6 bước phối hợp</td><td><code>PlaceOrderUseCase</code></td></tr>
+</tbody>
+</table></div>
+
+<h4>Lý do 2: "một Use Case một execute" là quy ước, không phải luật</h4>
+<p>Khi 3 hành động <strong>cùng chia sẻ state của một luồng</strong>, gom lại hợp lý hơn:</p>
+<div class="hl"><pre><code>protocol CheckoutUseCaseProtocol {
+    func loadCheckout() async throws -> CheckoutData
+    func applyVoucher(_ code: String) async throws -> PriceBreakdown
+    func placeOrder() async throws -> Order
+}
+
+actor CheckoutUseCase: CheckoutUseCaseProtocol {
+    <span class="c">// ... 5 repository + calculatePrice</span>
+
+    <span class="c">// State của luồng checkout — ĐÂY là lý do gom lại</span>
+    private var cart: Cart?
+    private var voucher: Voucher?
+    private var address: Address?
+}
+</code></pre></div>
+<p>Tách thành 3 struct riêng thì state đó lại phải để ViewModel giữ — quay lại vấn đề ban đầu.</p>
+
+<h4>Nếu muốn giữ "một Use Case một execute" — cũng được</h4>
+<div class="hl"><pre><code>@MainActor
+final class CheckoutViewModel: ObservableObject {
+    private let loadCheckout: LoadCheckoutUseCaseProtocol
+    private let applyVoucher: ApplyVoucherUseCaseProtocol
+    private let placeOrder: PlaceOrderUseCaseProtocol
+    <span class="c">// Ba dependency, mỗi cái ứng với một hành động — đọc init là biết</span>
+    <span class="c">// màn hình này làm được ba việc. RÕ HƠN một protocol có ba hàm.</span>
+}
+
+<span class="c">// Nếu init dài quá thì gom lại</span>
+struct CheckoutDependencies {
+    let loadCheckout: LoadCheckoutUseCaseProtocol
+    let applyVoucher: ApplyVoucherUseCaseProtocol
+    let placeOrder: PlaceOrderUseCaseProtocol
+}
+</code></pre></div>
+<p>Nhược điểm: nếu cần chia sẻ state thì phải truyền qua tham số — ký hiệu dài, nhưng đổi lại các use case <em>thuần</em> và rất dễ test. Đánh đổi hợp lý.</p>
+
+<div class="tw"><table>
+<thead><tr><th>Tình huống</th><th>Cách nên dùng</th></tr></thead>
+<tbody>
+<tr><td>Các hành động độc lập, không chia sẻ state</td><td>Nhiều Use Case riêng, mỗi cái một <code>execute</code></td></tr>
+<tr><td>Các hành động cùng một luồng, chia sẻ state</td><td>Một Use Case có nhiều hàm</td></tr>
+<tr><td>Chỉ đọc dữ liệu, không có nghiệp vụ</td><td>Gọi Repository trực tiếp, bỏ Use Case</td></tr>
+</tbody>
+</table></div>
+
+<div class="key">
+<p class="key-title">Thực tế một màn hình thường trộn cả ba</p>
+<div class="hl" style="margin-top:10px"><pre><code>final class CheckoutViewModel: ObservableObject {
+    private let addressRepo: AddressRepositoryProtocol   <span class="c">// đọc thuần</span>
+    private let placeOrder: PlaceOrderUseCaseProtocol    <span class="c">// nghiệp vụ phức tạp</span>
+}
+</code></pre></div>
+<p>Không có gì sai khi ViewModel dùng <strong>cả</strong> Repository và Use Case. Nhiều người tưởng phải chọn một trong hai — không phải.</p>
+</div>
+
+<div class="say">
+<p class="say-title">Nói trong interview</p>
+<p>"Em không bọc mọi thứ thành Use Case. Những hành động chỉ đọc dữ liệu thì ViewModel gọi Repository trực tiếp, vì bọc thành <code>GetAddressUseCase</code> mà bên trong chỉ gọi lại một hàm repository thì chỉ là file trung gian.</p>
+<p>Còn 'một Use Case một <code>execute</code>' em coi là quy ước chứ không phải luật. Nếu ba hành động độc lập thì em để ba use case riêng, ViewModel giữ ba cái cũng không sao. Nhưng nếu chúng chia sẻ state của cùng một luồng thì em gom vào một <code>CheckoutUseCase</code> có ba hàm — vì nếu tách ra, state đó lại phải để ViewModel giữ, mà như vậy nghiệp vụ lại quay về ViewModel.</p>
+<p>Điều em quan tâm không phải ViewModel giữ bao nhiêu dependency, mà là <strong>ViewModel có đang tự phối hợp nghiệp vụ hay không</strong>."</p>
+</div>
+</div>
+</details>
+
+<!-- ══════════════════ 12 ══════════════════ -->
+<h2 id="s12">12. Logic kỹ thuật nằm ở tầng nào</h2>
+<div class="qa-tools"><button type="button" data-act="open">Mở tất cả</button><button type="button" data-act="close">Thu gọn tất cả</button></div>
+
+<details class="qa">
+<summary><h3><span class="lv lv-r" title="Senior">●</span> Mã hóa / encode / decode có nằm ở Use Case không?</h3></summary>
+<div class="qa-body">
+<p><strong>Ngược lại — thường KHÔNG.</strong> Đây là điểm rất dễ nhầm.</p>
+
+<div class="tw"><table>
+<thead><tr><th></th><th>Use Case (Domain)</th><th>Data layer</th></tr></thead>
+<tbody>
+<tr><td>Trả lời câu hỏi</td><td><strong>Cái gì</strong> được phép, theo quy tắc nào</td><td><strong>Làm thế nào</strong> về mặt kỹ thuật</td></tr>
+<tr><td>Ví dụ</td><td>"VIP giảm 10%, không cộng dồn voucher"</td><td>"Mã hóa AES-256 rồi base64 trước khi gửi"</td></tr>
+<tr><td>Business/PO có quan tâm?</td><td>Có — họ quyết định quy tắc này</td><td>Không — họ không biết AES là gì</td></tr>
+<tr><td>Đổi khi nào</td><td>Khi nghiệp vụ đổi</td><td>Khi hạ tầng/bảo mật đổi</td></tr>
+</tbody>
+</table></div>
+
+<h4>Đặt đúng chỗ</h4>
+<div class="hl"><pre><code><span class="bad">// ❌ Use Case biết chuyện mã hóa → phải import CryptoKit, biết về key</span>
+struct SetPasswordUseCase {
+    func execute(_ password: String) async throws {
+        let encrypted = AESEncryptor.encrypt(password, key: Config.publicKey)
+        try await authRepo.setNewPassword(encrypted)
+    }
+}
+
+<span class="good">// ✅ Infra — một service kỹ thuật</span>
+protocol PasswordEncrypting { func encrypt(_ plain: String) throws -> String }
+
+struct AESPasswordEncryptor: PasswordEncrypting {
+    func encrypt(_ plain: String) throws -> String { <span class="c">/* CryptoKit chỉ ở đây */</span> }
+}
+
+<span class="good">// ✅ Repository nhận nó qua init</span>
+final class AuthRepository: PasswordRecoveryRepository {
+    private let api: AuthAPIProtocol
+    private let encryptor: PasswordEncrypting
+
+    func setNewPassword(_ password: String, token: ResetToken) async throws {
+        let encrypted = try encryptor.encrypt(password)     <span class="c">// chi tiết ở lại đây</span>
+        try await api.setPassword(encrypted, token: token)
+    }
+}
+
+<span class="good">// ✅ Use Case chỉ lo phần NGHIỆP VỤ</span>
+struct SetNewPasswordUseCase {
+    let authRepo: PasswordRecoveryRepository
+
+    func execute(_ password: String, confirm: String, token: ResetToken) async throws {
+        guard password == confirm else { throw PasswordError.khongKhop }
+        guard password.count &gt;= 8 else { throw PasswordError.quaNgan(toiThieu: 8) }
+        guard password.contains(where: \.isNumber) else { throw PasswordError.thieuSo }
+        guard password.contains(where: \.isUppercase) else { throw PasswordError.thieuChuHoa }
+
+        try await authRepo.setNewPassword(password, token: token)
+        <span class="c">// ↑ không biết gì về mã hóa</span>
+    }
+}
+</code></pre></div>
+<p><strong>Quy tắc mật khẩu mạnh</strong> là nghiệp vụ — PO quyết định, Android phải giống y hệt, cần test nhiều tổ hợp. <strong>Thuật toán mã hóa</strong> là kỹ thuật — nằm ở tầng data.</p>
+
+<h4>Bảng phân loại</h4>
+<div class="tw"><table>
+<thead><tr><th>Việc</th><th>Thuộc tầng</th><th>Lý do</th></tr></thead>
+<tbody>
+<tr><td>Parse JSON → Model</td><td>API layer</td><td>Kỹ thuật thuần, phụ thuộc format API</td></tr>
+<tr><td>Map DTO → Domain Model</td><td>Repository</td><td>Che đi hình dạng dữ liệu của server</td></tr>
+<tr><td>Mã hóa mật khẩu trước khi gửi</td><td>Repository (qua service)</td><td>Thỏa thuận kỹ thuật với backend</td></tr>
+<tr><td>Lưu token vào Keychain</td><td>Repository / Store</td><td>Cách lưu trữ</td></tr>
+<tr><td>Encode/decode base64</td><td>API layer</td><td>Định dạng truyền tải</td></tr>
+<tr><td>Nén ảnh trước khi upload</td><td>Repository (qua service)</td><td>Kỹ thuật</td></tr>
+<tr><td><strong>Mật khẩu tối thiểu 8 ký tự</strong></td><td><strong>Use Case</strong></td><td>Nghiệp vụ, PO quyết định</td></tr>
+<tr><td><strong>Chỉ VIP mới đặt đơn trên 10 triệu</strong></td><td><strong>Use Case</strong></td><td>Nghiệp vụ</td></tr>
+<tr><td><strong>Ảnh không được quá 5MB</strong></td><td><strong>Use Case</strong> (nếu là quy định sản phẩm)</td><td>Nếu là giới hạn server → Repository tự nén</td></tr>
+<tr><td>Format tiền <code>"900.000 đ"</code></td><td>ViewModel</td><td>Hiển thị</td></tr>
+</tbody>
+</table></div>
+
+<h4>Ba phép thử để tự quyết định</h4>
+<ol>
+<li><strong>"PO/business có bao giờ yêu cầu đổi cái này không?"</strong> — "Đổi mật khẩu tối thiểu lên 10 ký tự" → có → Use Case. "Đổi từ AES sang RSA" → PO không nói câu này → Data layer.</li>
+<li><strong>"Bên Android có làm giống y hệt về mặt logic không?"</strong> — Quy tắc mật khẩu: giống y hệt → Domain. Mã hóa: cùng thuật toán nhưng dùng thư viện khác của Android, code hoàn toàn khác → Data layer. <em>Domain là cùng logic; mã hóa là cùng kết quả nhưng cách làm khác nhau tùy nền tảng.</em></li>
+<li><strong>"File này có phải import thư viện kỹ thuật không?"</strong> — Use Case phải <code>import CryptoKit</code>, <code>import Compression</code> → gần như chắc chắn nó đang giữ việc không thuộc mình.</li>
+</ol>
+
+<h4>Ngoại lệ: khi mã hóa LÀ nghiệp vụ</h4>
+<p>App password manager, hoặc chat có end-to-end encryption — lúc đó "cái gì được mã hóa, khóa của ai, ai giải mã được" <strong>là chính sản phẩm</strong>. Nhưng cách tổ chức vẫn tương tự: Use Case giữ <strong>quyết định</strong>, service giữ <strong>thuật toán</strong>.</p>
+<div class="hl"><pre><code>protocol CryptoService {                                    <span class="c">// infra</span>
+    func encrypt(_ data: Data, with key: PublicKey) throws -> Data
+}
+
+struct SendSecureMessageUseCase {                            <span class="c">// domain</span>
+    let crypto: CryptoService
+    let keyRepo: KeyRepositoryProtocol
+    let messageRepo: MessageSending
+
+    func execute(_ text: String, to recipientID: String) async throws {
+        <span class="c">// Quyết định NGHIỆP VỤ: mã hóa bằng khóa công khai của người nhận</span>
+        guard let key = try await keyRepo.publicKey(of: recipientID) else {
+            throw ChatError.chuaCoKhoaCongKhai
+        }
+        <span class="c">// Nhưng KHÔNG tự viết thuật toán</span>
+        let encrypted = try crypto.encrypt(Data(text.utf8), with: key)
+        try await messageRepo.send(encrypted, to: recipientID)
+    }
+}
+</code></pre></div>
+<p>Use Case này nói <em>"phải mã hóa bằng khóa của người nhận"</em> — nghiệp vụ. Nó không nói <em>"dùng Curve25519"</em> — việc của <code>CryptoService</code>.</p>
+
+<div class="say">
+<p class="say-title">Nói trong interview</p>
+<p>"Em nghĩ ngược lại — mã hóa với encode/decode thường không thuộc Use Case mà thuộc tầng data.</p>
+<p>Cách em phân biệt là tự hỏi <strong>PO có bao giờ yêu cầu đổi cái này không</strong>. Nếu PO nói 'đổi mật khẩu tối thiểu lên 10 ký tự' thì đó là nghiệp vụ, để ở Use Case. Còn 'đổi từ AES sang RSA' thì PO không nói câu đó — đó là thỏa thuận kỹ thuật với backend, nên em để trong Repository.</p>
+<p>Ví dụ với đổi mật khẩu, Use Case của em kiểm tra hai lần nhập có khớp không, đủ 8 ký tự chưa, có chữ hoa có số chưa. Còn việc mã hóa thì Repository nhận một <code>PasswordEncrypting</code> qua init và tự làm bên trong. Nhờ vậy Use Case không phải <code>import CryptoKit</code>, và đổi thuật toán thì chỉ sửa một class.</p>
+<p>Có ngoại lệ là khi mã hóa chính là sản phẩm, ví dụ chat có end-to-end encryption. Lúc đó Use Case giữ quyết định 'mã hóa bằng khóa công khai của người nhận' vì đó là nghiệp vụ, nhưng thuật toán cụ thể vẫn nằm trong một <code>CryptoService</code> được inject vào."</p>
+</div>
+</div>
+</details>
+
+<!-- ══════════════════ TỔNG KẾT ══════════════════ -->
+<h2 id="tong-ket">Tổng kết: ai lo việc gì</h2>
+
+<div class="tw"><table>
+<thead><tr><th>Tầng</th><th>Trách nhiệm</th><th>Được biết về</th></tr></thead>
+<tbody>
+<tr><td><strong>View</strong></td><td>Vẽ, nhận tương tác</td><td>ViewModel</td></tr>
+<tr><td><strong>ViewModel</strong></td><td>State cho View, format hiển thị, dịch lỗi, điều hướng</td><td>Use Case (hoặc Repository nếu đơn giản)</td></tr>
+<tr><td><strong>Use Case</strong></td><td>Quy tắc nghiệp vụ, phối hợp nhiều repository</td><td>Repository (qua protocol)</td></tr>
+<tr><td><strong>Repository</strong></td><td>Lấy dữ liệu từ đâu, cache, map DTO → Domain</td><td>API, Store, service kỹ thuật</td></tr>
+<tr><td><strong>API / Store</strong></td><td>Kỹ thuật thuần: HTTP, database, mã hóa, encode</td><td>—</td></tr>
+</tbody>
+</table></div>
+
+<p>Hướng phụ thuộc luôn đi <strong>xuống</strong>, và luôn qua <strong>protocol</strong>. Không tầng nào biết về tầng trên mình.</p>
+
+<div class="key">
+<p class="key-title">Năm câu tự hỏi khi không biết code nên đặt ở đâu</p>
+<ul>
+<li><strong>PO có bao giờ yêu cầu đổi cái này không?</strong> → Có thì là nghiệp vụ (Use Case)</li>
+<li><strong>Bên Android có logic giống y hệt không?</strong> → Giống thì là Domain</li>
+<li><strong>File này phải import thư viện kỹ thuật gì?</strong> → Nếu Use Case phải import là sai tầng</li>
+<li><strong>API team đổi endpoint X thì tôi sửa mấy file?</strong> → Nhiều file là chia sai</li>
+<li><strong>Copy file này sang project command-line có compile được không?</strong> → Được thì Use Case sạch</li>
+</ul>
+</div>
+
+<blockquote>
+<p><strong>Điều rút ra chung của cả buổi:</strong> phần lớn quyết định thiết kế ở đây đều nhằm biến một <em>bug lúc chạy</em> thành một <em>lỗi lúc compile</em>, hoặc biến <em>bốn chỗ phải sửa</em> thành <em>một chỗ</em>. Nếu một cách tách không làm được điều nào trong hai điều đó, có thể nó chưa cần thiết.</p>
+</blockquote>
+
+  </main>
+</div>
+
+<p class="foot"><em>Session notes · Đọc hiểu &gt; học thuộc</em><br>
+<a href="ios-prep.html">← Về master doc</a></p>
+
+<script>
+// scroll-spy: highlight active section in sidebar
+const links = [...document.querySelectorAll('.nav-link')];
+const map = new Map();
+links.forEach(l => {
+  const id = l.getAttribute('href').slice(1);
+  const el = document.getElementById(id);
+  if (el) map.set(el, l);
+});
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const active = map.get(e.target);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-10% 0px -80% 0px', threshold: 0 });
+map.forEach((_, el) => obs.observe(el));
+
+// close mobile TOC after tapping a link
+links.forEach(l => l.addEventListener('click', () => {
+  if (window.innerWidth <= 900) {
+    const d = document.querySelector('aside details');
+    if (d) d.open = false;
+  }
+}));
+
+// ---- collapsible cards: deep-link + expand/collapse all ----
+function openQA(el){
+  let n = el;
+  while (n){
+    if (n.tagName === 'DETAILS') n.open = true;
+    n = n.parentElement;
+  }
+}
+function revealHash(){
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (!h) return;
+  const t = document.getElementById(h);
+  if (!t) return;
+  openQA(t);
+  const card = t.closest('.qa');
+  if (card){
+    card.classList.add('flash');
+    setTimeout(() => card.classList.remove('flash'), 1200);
+  }
+  t.scrollIntoView({ block: 'start' });
+}
+window.addEventListener('hashchange', revealHash);
+revealHash();
+
+document.querySelectorAll('.qa-tools').forEach(tools => {
+  // the toolbar governs the cards of its own section only (up to the next h2)
+  const cards = [];
+  for (let n = tools.nextElementSibling; n && n.tagName !== 'H2'; n = n.nextElementSibling){
+    if (n.classList.contains('qa')) cards.push(n);
+  }
+  tools.querySelector('[data-act="open"]').addEventListener('click', () => {
+    cards.forEach(d => d.open = true);
+  });
+  tools.querySelector('[data-act="close"]').addEventListener('click', () => {
+    cards.forEach(d => d.open = false);
+  });
+});
+
+// keep in-page links to a collapsed card working
+document.querySelectorAll('main a[href^="#"]').forEach(a => {
+  a.addEventListener('click', () => {
+    const t = document.getElementById(a.getAttribute('href').slice(1));
+    if (t) openQA(t);
+  });
+});
+</script>
+</body>
+</html>
